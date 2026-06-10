@@ -212,6 +212,7 @@ Build from source first, then configure your AI tool:
 ## File Exclusion
 
 The tool reads `.gitignore` files (including nested ones) and follows standard gitignore rules. For additional exclusions, use `--exclude` or the `exclude` config field.
+
 ---
 
 MIT License · Fork of [Done-0/fuck-u-code](https://github.com/Done-0/fuck-u-code) · ⭐ Star the original!
