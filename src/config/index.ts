@@ -90,185 +90,51 @@ export async function loadLocaleFromConfig(): Promise<Locale | undefined> {
 }
 
 /**
- * Load AI configuration
- * Priority: CLI flag > environment variable > config file
+ * Load AI configuration from config file only
+ * CLI flags override config file values
  */
 export function loadAIConfig(configAI?: Config['ai'], cliModel?: string): AIConfig {
   const providers: AIConfig['providers'] = {};
-  const configApiKey = configAI?.apiKey;
-  const configBaseUrl = configAI?.baseUrl;
-  const configProvider = configAI?.provider;
 
-  // OpenAI-compatible - model specified by user via OPENAI_MODEL or CLI --model
-  const openaiKey =
-    process.env.OPENAI_API_KEY ||
-    (!configProvider || configProvider === 'openai' ? configApiKey : undefined);
-  if (openaiKey) {
-    const model =
-      cliModel ||
-      process.env.OPENAI_MODEL ||
-      (configProvider === 'openai' ? configAI?.model : undefined);
-    if (!model) {
-      logger.warn(t('warn_no_model_specified', { provider: 'OPENAI' }));
-    }
-    providers.openai = {
-      enabled: true,
-      instances: [
-        {
-          name: 'default',
-          enabled: true,
-          baseUrl:
-            process.env.OPENAI_BASE_URL ||
-            (configProvider === 'openai' ? configBaseUrl : undefined) ||
-            'https://api.openai.com/v1',
-          apiKey: openaiKey,
-          models: model ? [model] : [],
-          maxTokens: parseInt(process.env.OPENAI_MAX_TOKENS || '4096', 10),
-          temperature: parseFloat(process.env.OPENAI_TEMPERATURE || '0.7'),
-          topP: 1,
-          timeout: parseInt(process.env.OPENAI_TIMEOUT || '60', 10),
-          maxRetries: 3,
-        },
-      ],
-    };
+  if (!configAI?.enabled || !configAI.apiKey || !configAI.model) {
+    return { providers };
   }
 
-  // Anthropic - model specified by user via ANTHROPIC_MODEL or CLI --model
-  const anthropicKey =
-    process.env.ANTHROPIC_API_KEY || (configProvider === 'anthropic' ? configApiKey : undefined);
-  if (anthropicKey) {
-    const model =
-      cliModel ||
-      process.env.ANTHROPIC_MODEL ||
-      (configProvider === 'anthropic' ? configAI?.model : undefined);
-    if (!model) {
-      logger.warn(t('warn_no_model_specified', { provider: 'ANTHROPIC' }));
-    }
-    providers.anthropic = {
-      enabled: true,
-      instances: [
-        {
-          name: 'default',
-          enabled: true,
-          baseUrl:
-            process.env.ANTHROPIC_BASE_URL ||
-            (configProvider === 'anthropic' ? configBaseUrl : undefined) ||
-            'https://api.anthropic.com',
-          apiKey: anthropicKey,
-          models: model ? [model] : [],
-          maxTokens: parseInt(process.env.ANTHROPIC_MAX_TOKENS || '4096', 10),
-          temperature: parseFloat(process.env.ANTHROPIC_TEMPERATURE || '0.7'),
-          topP: 1,
-          timeout: parseInt(process.env.ANTHROPIC_TIMEOUT || '60', 10),
-          maxRetries: 3,
-        },
-      ],
-    };
-  }
+  const provider = configAI.provider || 'openai';
+  const model = cliModel || configAI.model;
+  const baseUrl = configAI.baseUrl || getDefaultBaseUrl(provider);
 
-  // DeepSeek - model specified by user via DEEPSEEK_MODEL or CLI --model
-  const deepseekKey =
-    process.env.DEEPSEEK_API_KEY || (configProvider === 'deepseek' ? configApiKey : undefined);
-  if (deepseekKey) {
-    const model =
-      cliModel ||
-      process.env.DEEPSEEK_MODEL ||
-      (configProvider === 'deepseek' ? configAI?.model : undefined);
-    if (!model) {
-      logger.warn(t('warn_no_model_specified', { provider: 'DEEPSEEK' }));
-    }
-    providers.deepseek = {
-      enabled: true,
-      instances: [
-        {
-          name: 'default',
-          enabled: true,
-          baseUrl:
-            process.env.DEEPSEEK_BASE_URL ||
-            (configProvider === 'deepseek' ? configBaseUrl : undefined) ||
-            'https://api.deepseek.com/v1',
-          apiKey: deepseekKey,
-          models: model ? [model] : [],
-          maxTokens: parseInt(process.env.DEEPSEEK_MAX_TOKENS || '4096', 10),
-          temperature: parseFloat(process.env.DEEPSEEK_TEMPERATURE || '0.7'),
-          topP: 1,
-          timeout: parseInt(process.env.DEEPSEEK_TIMEOUT || '60', 10),
-          maxRetries: 3,
-        },
-      ],
-    };
-  }
-
-  // Ollama (local) - model specified by user via OLLAMA_MODEL or CLI --model
-  const ollamaModel =
-    cliModel ||
-    process.env.OLLAMA_MODEL ||
-    (configProvider === 'ollama' ? configAI?.model : undefined);
-
-  if (ollamaModel) {
-    const defaultOllamaHost = 'http://localhost:11434';
-    const ollamaHost =
-      process.env.OLLAMA_HOST ||
-      (configProvider === 'ollama' ? configBaseUrl : undefined) ||
-      defaultOllamaHost;
-
-    providers.ollama = {
-      enabled: true,
-      instances: [
-        {
-          name: 'local',
-          enabled: true,
-          baseUrl: ollamaHost,
-          apiKey: '',
-          models: [ollamaModel],
-          maxTokens: parseInt(process.env.OLLAMA_MAX_TOKENS || '4096', 10),
-          temperature: parseFloat(process.env.OLLAMA_TEMPERATURE || '0.7'),
-          topP: 1,
-          timeout: parseInt(process.env.OLLAMA_TIMEOUT || '120', 10),
-          maxRetries: 2,
-        },
-      ],
-    };
-  }
-
-  // Gemini - model specified by user via GEMINI_MODEL or CLI --model
-  const geminiKey =
-    process.env.GEMINI_API_KEY || (configProvider === 'gemini' ? configApiKey : undefined);
-  if (geminiKey) {
-    const model =
-      cliModel ||
-      process.env.GEMINI_MODEL ||
-      (configProvider === 'gemini' ? configAI?.model : undefined);
-    if (!model) {
-      logger.warn(t('warn_no_model_specified', { provider: 'GEMINI' }));
-    }
-    providers.gemini = {
-      enabled: true,
-      instances: [
-        {
-          name: 'default',
-          enabled: true,
-          baseUrl:
-            process.env.GEMINI_BASE_URL ||
-            (configProvider === 'gemini' ? configBaseUrl : undefined) ||
-            'https://generativelanguage.googleapis.com',
-          apiKey: geminiKey,
-          models: model ? [model] : [],
-          maxTokens: parseInt(process.env.GEMINI_MAX_TOKENS || '4096', 10),
-          temperature: parseFloat(process.env.GEMINI_TEMPERATURE || '0.7'),
-          topP: 1,
-          topK: 40,
-          timeout: parseInt(process.env.GEMINI_TIMEOUT || '60', 10),
-          maxRetries: 3,
-        },
-      ],
-    };
-  }
+  providers[provider] = {
+    enabled: true,
+    instances: [
+      {
+        name: 'default',
+        enabled: true,
+        format: provider === 'anthropic' ? 'anthropic' : 'openai',
+        baseUrl,
+        apiKey: configAI.apiKey,
+        models: [model],
+        maxTokens: 4096,
+        temperature: 0.7,
+        topP: 1,
+        timeout: 60,
+        maxRetries: 3,
+      },
+    ],
+  };
 
   return {
     providers,
-    defaultProvider: Object.keys(providers)[0],
+    defaultProvider: provider,
   };
+}
+
+function getDefaultBaseUrl(provider: string): string {
+  const urls: Record<string, string> = {
+    openai: 'https://api.openai.com/v1',
+    anthropic: 'https://api.anthropic.com',
+  };
+  return urls[provider] || 'https://api.openai.com/v1';
 }
 
 /**

@@ -21,7 +21,7 @@ const SETTABLE_KEYS: Record<string, (config: Record<string, unknown>, value: str
     (config.i18n as Record<string, unknown>).locale = value;
   },
   'ai.provider': (config, value) => {
-    const valid = ['openai', 'anthropic', 'deepseek', 'gemini', 'ollama'];
+    const valid = ['openai', 'anthropic'];
     if (!valid.includes(value)) {
       throw new Error(`Invalid provider: ${value}. Must be one of: ${valid.join(', ')}`);
     }

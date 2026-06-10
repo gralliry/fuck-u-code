@@ -2,8 +2,7 @@
  * MCP (Model Context Protocol) Server for fuck-u-code
  *
  * Exposes analyze and ai-review tools via stdio transport,
- * allowing AI tools (Claude Code, Cursor, etc.) to invoke
- * code quality analysis and AI-powered code review directly.
+ * allowing AI tools to invoke code quality analysis and AI-powered code review.
  */
 
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
@@ -19,14 +18,58 @@ import { setLocale, type Locale } from '../i18n/index.js';
 import type { RuntimeConfig } from '../config/schema.js';
 import { VERSION } from '../version.js';
 
-const server = new McpServer({
-  name: 'fuck-u-code',
-  version: VERSION,
-});
+const SERVER_INSTRUCTIONS = `fuck-u-code is a code quality analyzer that scores projects on a 0-100 "shit mountain index".
+
+## Available Tools
+
+### analyze
+Analyze a local project directory and return a code quality report with:
+- Overall score (0-100, higher = worse)
+- Per-file scores and issue breakdown
+- Complexity, duplication, naming, structure, and error handling metrics
+- A ranked list of the worst files
+
+Use this tool when:
+- The user asks you to review, analyze, or assess code quality
+- The user mentions "code smell", "shit code", "clean code", or "refactoring"
+- You want to identify problematic files before doing deeper review
+- The user asks "how bad is this code" or similar questions
+
+### ai-review
+Run AI-powered code review on the worst-scoring files from a project.
+This first runs the analyze step, then uses an external AI model (OpenAI or Anthropic)
+to produce detailed, actionable review comments for each problem file.
+
+Use this tool when:
+- The user asks for detailed code review suggestions
+- The user wants refactoring advice or security analysis
+- The user says "review this code" or "find problems in this code"
+- You need deeper, human-like analysis beyond metrics
+
+Note: ai-review requires an API key configured in ~/.fuckucoderc.json (ai.apiKey, ai.model, ai.provider).
+
+## Usage Tips
+- Always pass an absolute path for reliable results
+- Use format: 'json' when you need structured data to process programmatically
+- Use format: 'markdown' when presenting results directly to the user
+- The 'top' parameter controls how many worst files to include (default 10 for analyze, 5 for ai-review)
+- Set verbose: true to get function-level detail and full issue lists`;
+
+const server = new McpServer(
+  {
+    name: 'fuck-u-code',
+    version: VERSION,
+  },
+  {
+    instructions: SERVER_INSTRUCTIONS,
+    capabilities: {
+      tools: {},
+    },
+  }
+);
 
 /**
  * Build a RuntimeConfig from MCP tool parameters.
- * Reuses the same config loading pipeline as the CLI.
  */
 async function buildRuntimeConfig(
   projectPath: string,
@@ -37,7 +80,6 @@ async function buildRuntimeConfig(
   }
 
   const config = await loadConfig(projectPath);
-  // mergeConfig spreads nested objects, so partial output fields are safe at runtime
   const overrides: Partial<import('../config/schema.js').Config> = { verbose: options.verbose };
   if (options.top !== undefined) {
     overrides.output = { top: options.top } as import('../config/schema.js').Config['output'];
@@ -48,31 +90,55 @@ async function buildRuntimeConfig(
 const DEFAULT_BASE_URLS: Record<string, string> = {
   openai: 'https://api.openai.com/v1',
   anthropic: 'https://api.anthropic.com',
-  deepseek: 'https://api.deepseek.com/v1',
-  gemini: 'https://generativelanguage.googleapis.com',
-  ollama: 'http://localhost:11434',
 };
 
 server.registerTool(
   'analyze',
   {
-    title: 'Code Quality Analysis',
+    title: 'Analyze Code Quality',
     description:
-      'Analyze code quality of a project and generate a "shit mountain index" score (0-100)',
+      'Analyze a local code project and generate a code quality report with a 0-100 score (higher = worse), per-file breakdowns, metric analysis (complexity, duplication, naming, structure, error handling), and a ranked list of the worst files. Use this whenever you need to assess code quality, find problematic files, or check for code smells.',
     inputSchema: {
-      path: z.string().describe('Absolute or relative path to the project directory'),
+      path: z
+        .string()
+        .describe(
+          'Absolute path to the project directory to analyze. Always resolve relative paths to absolute before passing.'
+        ),
       verbose: z
         .boolean()
         .optional()
         .default(false)
-        .describe('Include detailed metrics and function-level analysis'),
+        .describe(
+          'When true, returns full detail: function-level metrics, all issues per file, and extended statistics. Set to true for deep analysis, false for summary.'
+        ),
       format: z
         .enum(['console', 'markdown', 'json'])
         .optional()
         .default('json')
-        .describe('Output format (json for full data, markdown for summary)'),
-      top: z.number().optional().default(10).describe('Number of worst files to show'),
-      locale: z.enum(['en', 'zh', 'ru']).optional().default('en').describe('Output language'),
+        .describe(
+          'Output format. Use "json" for programmatic processing (full structured data), "markdown" for human-readable presentation, "console" for terminal display.'
+        ),
+      top: z
+        .number()
+        .min(1)
+        .max(50)
+        .optional()
+        .default(10)
+        .describe(
+          'How many of the worst-scoring files to include in the report. Higher values give more coverage but larger output.'
+        ),
+      locale: z
+        .enum(['en', 'zh', 'ru'])
+        .optional()
+        .default('en')
+        .describe('Output language: en (English), zh (Chinese), ru (Russian).'),
+    },
+    annotations: {
+      title: 'Analyze Code Quality',
+      readOnlyHint: true,
+      destructiveHint: false,
+      idempotentHint: true,
+      openWorldHint: false,
     },
   },
   async ({ path: projectPath, verbose, format, top, locale }) => {
@@ -101,27 +167,68 @@ server.registerTool(
 server.registerTool(
   'ai-review',
   {
-    title: 'AI Code Review',
-    description: 'Run AI-powered code review on the worst-scoring files in a project',
+    title: 'AI-Powered Code Review',
+    description:
+      'Run AI-powered code review on the worst-scoring files in a project. First analyzes the codebase to find problem files, then uses an external LLM (OpenAI/Anthropic) to generate detailed, actionable review comments for each file — including severity assessment, refactoring suggestions, security concerns, and maintainability recommendations. Use this when the user wants specific, human-quality feedback on their code.',
     inputSchema: {
-      path: z.string().describe('Absolute or relative path to the project directory'),
+      path: z
+        .string()
+        .describe(
+          'Absolute path to the project directory to review. Always resolve relative paths to absolute before passing.'
+        ),
       model: z
         .string()
-        .describe('AI model name (e.g. gpt-4o, claude-3-opus, deepseek-chat, llama3)'),
+        .optional()
+        .describe(
+          'AI model name to use for review (e.g. gpt-4o, claude-3-opus). If omitted, uses the model from config file.'
+        ),
       provider: z
-        .enum(['openai', 'anthropic', 'deepseek', 'gemini', 'ollama'])
+        .enum(['openai', 'anthropic'])
         .optional()
         .default('openai')
-        .describe('AI provider'),
-      baseUrl: z.string().optional().describe('Custom API base URL'),
-      apiKey: z.string().optional().describe('API key (can also use environment variables)'),
-      top: z.number().optional().default(5).describe('Number of worst files to review'),
-      locale: z.enum(['en', 'zh', 'ru']).optional().default('en').describe('Output language'),
+        .describe(
+          'API format to use. "openai" works with OpenAI, DeepSeek, Ollama, and any OpenAI-compatible API. "anthropic" for Anthropic Claude models.'
+        ),
+      baseUrl: z
+        .string()
+        .optional()
+        .describe(
+          'Custom API endpoint URL. Use for OpenAI-compatible services like DeepSeek (https://api.deepseek.com/v1) or local Ollama (http://localhost:11434/v1).'
+        ),
+      apiKey: z
+        .string()
+        .optional()
+        .describe(
+          'API key for the AI service. If omitted, reads from config file (~/.fuckucoderc.json).'
+        ),
+      top: z
+        .number()
+        .min(1)
+        .max(20)
+        .optional()
+        .default(5)
+        .describe(
+          'How many of the worst files to review. Fewer files = faster. AI review is slower than plain analysis, so start small.'
+        ),
+      locale: z
+        .enum(['en', 'zh', 'ru'])
+        .optional()
+        .default('en')
+        .describe('Output language for review comments: en (English), zh (Chinese), ru (Russian).'),
       verbose: z
         .boolean()
         .optional()
         .default(false)
-        .describe('Include detailed metrics in analysis'),
+        .describe(
+          'When true, includes detailed per-function metrics in the prompt sent to the AI for richer context.'
+        ),
+    },
+    annotations: {
+      title: 'AI-Powered Code Review',
+      readOnlyHint: true,
+      destructiveHint: false,
+      idempotentHint: false,
+      openWorldHint: true,
     },
   },
   async ({ path: projectPath, model, provider, baseUrl, apiKey, top, locale, verbose }) => {
@@ -137,22 +244,25 @@ server.registerTool(
     const analyzer = createAnalyzer(runtimeConfig);
     const analysisResult = await analyzer.analyze();
 
-    const worstFiles = analysisResult.fileResults.sort((a, b) => a.score - b.score).slice(0, top);
+    const worstFiles = analysisResult.fileResults
+      .sort((a, b) => a.score - b.score)
+      .slice(0, top);
 
     if (worstFiles.length === 0) {
       return {
-        content: [{ type: 'text' as const, text: 'No files to review — all scores are clean.' }],
+        content: [
+          { type: 'text' as const, text: 'No files to review — all scores are clean.' },
+        ],
       };
     }
 
-    const resolvedApiKey = apiKey || process.env[`${provider.toUpperCase()}_API_KEY`] || '';
     const aiConfig = loadAIConfig(
       {
         enabled: true,
         provider,
         model,
         baseUrl: baseUrl || DEFAULT_BASE_URLS[provider],
-        apiKey: resolvedApiKey,
+        apiKey: apiKey || config.ai?.apiKey || '',
       },
       model
     );
@@ -162,7 +272,7 @@ server.registerTool(
         content: [
           {
             type: 'text' as const,
-            text: 'Error: No AI provider configured. Provide an API key or set environment variables.',
+            text: 'Error: No AI provider configured. Set ai.apiKey, ai.model, and ai.provider in ~/.fuckucoderc.json, or pass apiKey + model parameters.',
           },
         ],
       };

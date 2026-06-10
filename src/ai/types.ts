@@ -7,13 +7,13 @@
 export interface ProviderInstanceConfig {
   name: string;
   enabled: boolean;
+  format: 'openai' | 'anthropic';
   baseUrl: string;
   apiKey: string;
   models: string[];
   maxTokens: number;
   temperature: number;
   topP: number;
-  topK?: number;
   timeout: number;
   maxRetries: number;
   rateLimit?: string;
@@ -94,13 +94,13 @@ export interface ChatStreamResponse {
 export interface ProviderContext {
   providerName: string;
   instanceName: string;
+  format: 'openai' | 'anthropic';
   baseUrl: string;
   apiKey: string;
   model: string;
   maxTokens: number;
   temperature: number;
   topP: number;
-  topK?: number;
   timeout: number;
   maxRetries: number;
 }

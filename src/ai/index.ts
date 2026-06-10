@@ -4,8 +4,6 @@
 
 import { OpenAIProvider } from './providers/openai.js';
 import { AnthropicProvider } from './providers/anthropic.js';
-import { OllamaProvider } from './providers/ollama.js';
-import { GeminiProvider } from './providers/gemini.js';
 import { getCodeReviewPrompt } from './prompts/code-review.js';
 import { t } from '../i18n/index.js';
 
@@ -45,13 +43,13 @@ export class AIManager {
     const ctx: ProviderContext = {
       providerName,
       instanceName: instance.name,
+      format: instance.format,
       baseUrl: instance.baseUrl,
       apiKey: instance.apiKey,
       model: instance.models[0] || '',
       maxTokens: instance.maxTokens,
       temperature: instance.temperature,
       topP: instance.topP,
-      topK: instance.topK,
       timeout: instance.timeout,
       maxRetries: instance.maxRetries,
     };
@@ -92,13 +90,13 @@ export class AIManager {
     const ctx: ProviderContext = {
       providerName,
       instanceName: instance.name,
+      format: instance.format,
       baseUrl: instance.baseUrl,
       apiKey: instance.apiKey,
       model: request.model || instance.models[0] || '',
       maxTokens: instance.maxTokens,
       temperature: instance.temperature,
       topP: instance.topP,
-      topK: instance.topK,
       timeout: instance.timeout,
       maxRetries: instance.maxRetries,
     };
@@ -108,16 +106,11 @@ export class AIManager {
   }
 
   private createProvider(ctx: ProviderContext): Provider {
-    switch (ctx.providerName) {
+    switch (ctx.format) {
       case 'openai':
-      case 'deepseek':
         return new OpenAIProvider(ctx);
       case 'anthropic':
         return new AnthropicProvider(ctx);
-      case 'gemini':
-        return new GeminiProvider(ctx);
-      case 'ollama':
-        return new OllamaProvider(ctx);
       default:
         return new OpenAIProvider(ctx);
     }

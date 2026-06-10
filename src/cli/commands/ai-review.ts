@@ -37,10 +37,10 @@ export function createAIReviewCommand(): Command {
   command
     .description(t('cmd_ai_review_description'))
     .argument('[path]', 'Project path to review', '.')
-    .option('-p, --provider <provider>', 'AI provider: openai, anthropic, deepseek, gemini, ollama')
-    .option('-m, --model <model>', 'Model to use (required)')
+    .option('-p, --provider <provider>', 'AI provider: openai, anthropic')
+    .option('-m, --model <model>', 'Model to use (overrides config file)')
     .option('-b, --base-url <url>', 'Custom API base URL (for OpenAI-compatible APIs)')
-    .option('-k, --api-key <key>', 'API key (can also use environment variables)')
+    .option('-k, --api-key <key>', 'API key (overrides config file)')
     .option('-t, --top <number>', 'Number of worst files to review (default: 5)', parseInt)
     .option('-v, --verbose', 'Show verbose output')
     .option('-l, --locale <locale>', 'Language: en, zh, ru')
@@ -52,19 +52,8 @@ export function createAIReviewCommand(): Command {
 ${t('cli_examples')}
   $ fuck-u-code ai-review . --model gpt-4o --api-key sk-xxx
   $ fuck-u-code ai-review . --model claude-3-opus --provider anthropic
-  $ fuck-u-code ai-review . --model deepseek-chat --provider deepseek
-  $ fuck-u-code ai-review . --model gemini-2.5-flash --provider gemini
-  $ fuck-u-code ai-review . --model llama3 --provider ollama
+  $ fuck-u-code ai-review . --model deepseek-chat --base-url https://api.deepseek.com/v1
   $ fuck-u-code ai-review . --model gpt-4o --top 3
-
-${t('cmd_ai_review_env_header')}
-  OPENAI_API_KEY      OpenAI-compatible API key
-  OPENAI_MODEL        Default model for OpenAI-compatible provider
-  OPENAI_BASE_URL     Custom API endpoint (for any OpenAI-compatible service)
-  ANTHROPIC_API_KEY   Anthropic API key
-  DEEPSEEK_API_KEY    DeepSeek API key
-  GEMINI_API_KEY      Google Gemini API key
-  OLLAMA_HOST         Ollama server URL (e.g., http://localhost:11434)
 `
     )
     .action(async (path: string, options: AIReviewOptions) => {
@@ -89,23 +78,15 @@ async function runAIReview(projectPath: string, options: AIReviewOptions): Promi
   }
 
   const config = await loadConfig(resolvedPath);
+
+  // Load AI config from config file + env vars first (these serve as defaults)
   let aiConfig = loadAIConfig(config.ai, options.model);
 
-  if (options.baseUrl || options.apiKey || options.provider) {
-    const provider = options.provider || 'openai';
-    const apiKey = options.apiKey || process.env[`${provider.toUpperCase()}_API_KEY`];
+  // Merge CLI overrides on top of existing config — don't require redundant params
+  if (options.provider || options.baseUrl || options.apiKey) {
+    const provider = options.provider || aiConfig.defaultProvider || 'openai';
+    const existingInstance = aiConfig.providers[provider]?.instances[0];
 
-    if (!apiKey && provider !== 'ollama') {
-      console.error(chalk.red(t('ai_api_key_required')));
-      process.exit(1);
-    }
-
-    if (!options.model) {
-      console.error(chalk.red(t('ai_model_required')));
-      process.exit(1);
-    }
-
-    // When user explicitly specifies provider, use only that provider
     aiConfig = {
       providers: {
         [provider]: {
@@ -114,14 +95,23 @@ async function runAIReview(projectPath: string, options: AIReviewOptions): Promi
             {
               name: 'cli',
               enabled: true,
-              baseUrl: options.baseUrl || getDefaultBaseUrl(provider),
-              apiKey: apiKey || '',
-              models: [options.model],
-              maxTokens: 4096,
-              temperature: 0.7,
-              topP: 1,
-              timeout: 60,
-              maxRetries: 3,
+              format: provider === 'anthropic' ? 'anthropic' : 'openai',
+              baseUrl:
+                options.baseUrl ||
+                existingInstance?.baseUrl ||
+                getDefaultBaseUrl(provider),
+              apiKey:
+                options.apiKey ||
+                existingInstance?.apiKey ||
+                '',
+              models: options.model
+                ? [options.model]
+                : existingInstance?.models ?? [],
+              maxTokens: existingInstance?.maxTokens ?? 4096,
+              temperature: existingInstance?.temperature ?? 0.7,
+              topP: existingInstance?.topP ?? 1,
+              timeout: existingInstance?.timeout ?? 60,
+              maxRetries: existingInstance?.maxRetries ?? 3,
             },
           ],
         },
@@ -135,14 +125,6 @@ async function runAIReview(projectPath: string, options: AIReviewOptions): Promi
     console.log(chalk.yellow(t('aiProviderHint')));
     console.log(chalk.gray(`\n${t('ai_example_usage')}`));
     console.log(chalk.gray('  fuck-u-code ai-review . --model gpt-4o --api-key sk-xxx'));
-    console.log(
-      chalk.gray(
-        '  fuck-u-code ai-review . --model gemini-2.5-flash --provider gemini --api-key xxx'
-      )
-    );
-    console.log(chalk.gray(`\n${t('ai_or_set_env')}`));
-    console.log(chalk.gray('  export OPENAI_API_KEY=sk-xxx'));
-    console.log(chalk.gray('  export OPENAI_MODEL=gpt-4o'));
     process.exit(1);
   }
 
@@ -252,9 +234,6 @@ function getDefaultBaseUrl(provider: string): string {
   const urls: Record<string, string> = {
     openai: 'https://api.openai.com/v1',
     anthropic: 'https://api.anthropic.com',
-    deepseek: 'https://api.deepseek.com/v1',
-    gemini: 'https://generativelanguage.googleapis.com',
-    ollama: 'http://localhost:11434',
   };
   return urls[provider] ?? `https://api.${provider}.com/v1`;
 }
