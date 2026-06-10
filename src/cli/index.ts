@@ -14,7 +14,7 @@ import { loadLocaleFromConfig } from '../config/index.js';
 import { getSupportedLanguageNames } from '../parser/index.js';
 import { VERSION } from '../version.js';
 
-const VALID_LOCALES = ['en', 'zh', 'ru'];
+const VALID_LOCALES = ['en', 'zh'];
 
 export function createCLI(): Command {
   const program = new Command();

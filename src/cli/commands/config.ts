@@ -14,8 +14,8 @@ import chalk from 'chalk';
 /** Supported dot-notation keys for `config set` */
 const SETTABLE_KEYS: Record<string, (config: Record<string, unknown>, value: string) => void> = {
   'i18n.locale': (config, value) => {
-    if (!['en', 'zh', 'ru'].includes(value)) {
-      throw new Error(`Invalid locale: ${value}. Must be one of: en, zh, ru`);
+    if (!['en', 'zh'].includes(value)) {
+      throw new Error(`Invalid locale: ${value}. Must be one of: en, zh`);
     }
     ensureObject(config, 'i18n');
     (config.i18n as Record<string, unknown>).locale = value;

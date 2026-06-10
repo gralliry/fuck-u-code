@@ -1,6 +1,4 @@
-# fuck-u-code [![中文](https://img.shields.io/badge/文档-简体中文-blue?style=flat-square)](README_ZH.md) [![繁體中文](https://img.shields.io/badge/文檔-繁體中文-blue?style=flat-square)](README_ZH-TW.md) [![English](https://img.shields.io/badge/Docs-English-red?style=flat-square)](README.md) [![Русский](https://img.shields.io/badge/Docs-Русский-blue?style=flat-square)](README_RU.md)
-
-<a href="https://trendshift.io/repositories/14999" target="_blank"><img src="https://trendshift.io/api/badge/repositories/14999" alt="Done-0%2Ffuck-u-code | Trendshift" style="width: 250px; height: 55px;" width="250" height="55"/></a>
+# fuck-u-code [![中文](https://img.shields.io/badge/文档-简体中文-blue?style=flat-square)](README_ZH.md) [![English](https://img.shields.io/badge/Docs-English-red?style=flat-square)](README.md)
 
 > [!Important]
 > 📢 记住这个命令：fuck-u-code - 让代码不再烂到发指！
@@ -14,27 +12,38 @@
 * **糟糕指数**: 单文件评分，越高越烂
 * **七维度检测**: 复杂度 / 代码量 / 注释率 / 错误处理 / 命名 / 重复度 / 结构
 * **AST 解析**: 基于 tree-sitter 的精确语法分析
-* **AI 代码审查**: 集成 OpenAI 兼容 / Anthropic / DeepSeek / Gemini / Ollama
+* **AI 代码审查**: 集成 OpenAI 兼容 / Anthropic（DeepSeek、Ollama 可通过自定义 base URL 使用）
 * **多格式输出**: 终端彩色 / Markdown / JSON / HTML
-* **i18n**: 中文 / 英文 / 俄文
+* **i18n**: 中文 / 英文
 * **灵活配置**: `.fuckucoderc.json` 等多种格式，支持项目级和全局配置
 
 > [!Note]
 > 代码分析全程本地运行，不上传代码，安全无忧。
-> AI 审查需要调用外部 API 或本地 Ollama。
+> AI 审查需要调用外部 API。
+
+## 与原库的区别
+
+本 Fork 基于 **Done-0** 的原版 [`fuck-u-code`](https://github.com/Done-0/fuck-u-code)，重点进行了**精简和 Bug 修复**：
+
+| 方面 | 原版 (Done-0) | 本 Fork (gralliry) |
+| ---- | ------------- | ------------------- |
+| **AI 提供商** | 5 种（OpenAI、Anthropic、DeepSeek、Gemini、Ollama） | **2 种格式**（openai + anthropic）。DeepSeek/Ollama 仍可通过自定义 `--base-url` 使用 |
+| **AI 配置方式** | 混用：环境变量（`OPENAI_API_KEY`、`DEEPSEEK_API_KEY` 等）+ 配置文件 + CLI | **统一**：仅配置文件 + CLI，去除环境变量自动检测，更简洁、行为更可预测 |
+| **mcp-install** | 独立命令，自动配置 MCP | **已移除** — 文档中的 MCP 配置说明已足够清晰 |
+| **uninstall** | 移除全局配置、MCP 配置（Claude/Cursor）、npm 包 | **已移除** — 简化：无需全局包管理 |
+| **MCP Server** | 基础工具注册 | **增强** — 更详细的描述、工具注解（annotations）、`instructions`、参数约束（min/max） |
+| **Bug 修复** | — | 修复嵌套回调行数统计、箭头函数边界检测、SSH URL 正则、缺失目标目录的错误处理等 |
 
 ## 安装
 
-```bash
-npm install -g eff-u-code
-```
-
-或源码构建：
+源码构建：
 
 ```bash
-git clone https://github.com/Done-0/fuck-u-code.git
+git clone https://github.com/gralliry/fuck-u-code.git
 cd fuck-u-code && npm install && npm run build
 ```
+
+或从 [Releases](https://github.com/gralliry/fuck-u-code/releases) 页面下载预构建的二进制文件。
 
 ## 使用
 
@@ -61,32 +70,31 @@ fuck-u-code analyze . -e "**/*.test.ts"        # 排除测试文件
 | `--output <file>`   | `-o` | 输出到文件                       |
 | `--exclude <glob>`  | `-e` | 额外排除模式                     |
 | `--concurrency <n>` | `-c` | 并发数（默认 8）                 |
-| `--locale <lang>`   | `-l` | 语言: en/zh/ru/zh-tw             |
+| `--locale <lang>`   | `-l` | 语言: en/zh                       |
 
 ### AI 代码审查
 
 需先配置 AI 提供商（见 [AI 配置](#ai-配置)）。
 
 ```bash
-fuck-u-code ai-review . -m gpt-4o                          # OpenAI 兼容
-fuck-u-code ai-review . -p anthropic -m claude-sonnet-4-5-20250929  # Anthropic
-fuck-u-code ai-review . -p ollama -m codellama              # 本地 Ollama
-fuck-u-code ai-review . -m gpt-4o -t 3                     # 审查最差 3 个文件
-fuck-u-code ai-review . -m gpt-4o -f markdown -o review.md # 导出 Markdown
-fuck-u-code ai-review . -b https://your-api.com/v1 -k sk-xxx -m model # 自定义端点
+fuck-u-code ai-review . -m gpt-4o                                    # OpenAI 格式
+fuck-u-code ai-review . -p anthropic -m claude-sonnet-4-5-20250929   # Anthropic 格式
+fuck-u-code ai-review . -m gpt-4o -t 3                               # 审查最差 3 个文件
+fuck-u-code ai-review . -m gpt-4o -f markdown -o review.md           # 导出 Markdown
+fuck-u-code ai-review . -b https://api.deepseek.com/v1 -k sk-xxx -m deepseek-chat  # DeepSeek（OpenAI 格式）
 ```
 
-| 选项                | 简写 | 说明                                            |
-| ------------------- | ---- | ----------------------------------------------- |
-| `--model <model>`   | `-m` | 模型名称（必填）                                |
-| `--provider <name>` | `-p` | 提供商: openai/anthropic/deepseek/gemini/ollama |
-| `--base-url <url>`  | `-b` | 自定义 API 端点                                 |
-| `--api-key <key>`   | `-k` | API 密钥                                        |
+| 选项                | 简写 | 说明                       |
+| ------------------- | ---- | -------------------------- |
+| `--model <model>`   | `-m` | 模型名称（必填）           |
+| `--provider <name>` | `-p` | 格式: openai / anthropic   |
+| `--base-url <url>`  | `-b` | 自定义 API 端点            |
+| `--api-key <key>`   | `-k` | API 密钥                   |
 | `--top <n>`         | `-t` | 审查最差前 N 个文件（默认 5）                   |
 | `--format <fmt>`    | `-f` | 格式: console/markdown/html                     |
 | `--output <file>`   | `-o` | 输出到文件                                      |
 | `--verbose`         | `-v` | 详细输出                                        |
-| `--locale <lang>`   | `-l` | 语言: en/zh/ru                                  |
+| `--locale <lang>`   | `-l` | 语言: en/zh                       |
 
 ### 配置管理
 
@@ -98,32 +106,6 @@ fuck-u-code config set ai.provider openai  # 设置 AI 提供商
 fuck-u-code config set ai.model gpt-4o     # 设置 AI 模型
 fuck-u-code config set ai.apiKey sk-xxx    # 设置 API 密钥
 ```
-
-### 更新
-
-更新 eff-u-code 到最新版本：
-
-```bash
-fuck-u-code update    # 更新到最新版本
-```
-
-将会执行：
-- 检查当前安装的版本
-- 检查 npm 上的最新版本
-- 自动安装最新版本到全局
-
-### 卸载
-
-移除 fuck-u-code 并清理所有本地文件：
-
-```bash
-fuck-u-code uninstall    # 移除全局配置、MCP 配置和 npm 包
-```
-
-将删除以下内容：
-- 全局配置文件（`~/.fuckucoderc.json`）
-- MCP 服务器配置（Claude Code、Cursor）
-- 全局 npm 包（`eff-u-code`）
 
 ## 配置文件
 
@@ -173,22 +155,17 @@ fuck-u-code uninstall    # 移除全局配置、MCP 配置和 npm 包
 
 ## AI 配置
 
-支持 5 种提供商，优先级：命令行参数 > 环境变量 > 配置文件。
+支持 2 种格式，优先级：命令行参数 > 配置文件（`~/.fuckucoderc.json`）。
 
-| 提供商      | 环境变量                                          | 示例命令                                                 |
-| ----------- | ------------------------------------------------- | -------------------------------------------------------- |
-| OpenAI 兼容 | `OPENAI_API_KEY` `OPENAI_MODEL` `OPENAI_BASE_URL` | `ai-review . -m gpt-4o`                                  |
-| Anthropic   | `ANTHROPIC_API_KEY`                               | `ai-review . -p anthropic -m claude-sonnet-4-5-20250929` |
-| DeepSeek    | `DEEPSEEK_API_KEY`                                | `ai-review . -p deepseek -m deepseek-chat`               |
-| Gemini      | `GEMINI_API_KEY`                                  | `ai-review . -p gemini -m gemini-pro`                    |
-| Ollama      | `OLLAMA_HOST`（可选）                             | `ai-review . -p ollama -m codellama`                     |
+| 格式         | 配置方式                               | CLI 示例                                                  |
+| ------------ | -------------------------------------- | --------------------------------------------------------- |
+| OpenAI 兼容  | 配置文件中设置 `ai.provider: "openai"` | `ai-review . -m gpt-4o`                                   |
+| Anthropic    | 配置文件中设置 `ai.provider: "anthropic"` | `ai-review . -p anthropic -m claude-sonnet-4-5-20250929` |
+
+> **说明：** DeepSeek、Ollama 等 OpenAI 兼容 API 可通过 `--base-url` 配合 `openai` 格式使用。
 
 ```bash
-# OpenAI 兼容
-export OPENAI_API_KEY="sk-your-key"
-export OPENAI_BASE_URL="https://api.openai.com/v1"  # 可选
-
-# 或通过配置文件
+# 通过配置文件
 fuck-u-code config set ai.provider openai
 fuck-u-code config set ai.model gpt-4o
 fuck-u-code config set ai.apiKey sk-your-key
@@ -201,17 +178,7 @@ fuck-u-code 提供 MCP (Model Context Protocol) Server，让 Claude Code、Curso
 
 ### 配置方式
 
-```bash
-# 全局安装
-npm install -g eff-u-code
-
-# 自动配置（交互式）
-fuck-u-code mcp-install
-
-# 或直接指定目标
-fuck-u-code mcp-install claude
-fuck-u-code mcp-install cursor
-```
+首先从源码构建，然后配置你的 AI 工具：
 
 **Claude Code**（`~/.claude.json` 或项目 `.mcp.json`）：
 
@@ -237,19 +204,6 @@ fuck-u-code mcp-install cursor
 }
 ```
 
-**免安装方式（npx）**：
-
-```json
-{
-  "mcpServers": {
-    "fuck-u-code": {
-      "command": "npx",
-      "args": ["-y", "eff-u-code-mcp"]
-    }
-  }
-}
-```
-
 ### 可用工具
 
 - **analyze** — 分析代码质量并生成评分报告
@@ -259,25 +213,6 @@ fuck-u-code mcp-install cursor
 
 工具自动读取 `.gitignore`（含子目录），遵循标准 gitignore 规则。额外排除可用 `--exclude` 或配置文件的 `exclude` 字段。
 
-## 反馈
+---
 
-> 💬 欢迎参与开放讨论
-> Discord: <https://discord.gg/9ThNkAFGnT>
-
-## 贡献
-
-欢迎提 PR，一起优化"fuck-u-code" 🚀
-
-## 许可证
-
-MIT
-
-## 联系方式
-
-- fenderisfine@gmail.com
-- WeChat: l927171598
-
-## 💡 更多探索
-
-- **[Value Realization](https://github.com/Done-0/value-realization)** — 想要独立开发出像 `fuck-u-code` 这样的爆款产品？用这个 AI 技能跳出开发者的“自嗨”，精准验证真实需求。
-- **[Hermai.ai](https://hermai.ai)** — 告别一碰就碎的爬虫脚本。无需对抗 DOM 变更与反爬，一键将任意网站转化为干净、稳定的 JSON API。
+MIT License · Fork 自 [Done-0/fuck-u-code](https://github.com/Done-0/fuck-u-code) · ⭐ 给原库点 Star

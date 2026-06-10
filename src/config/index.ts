@@ -80,7 +80,7 @@ export async function loadLocaleFromConfig(): Promise<Locale | undefined> {
         | undefined;
     }
 
-    if (locale && ['en', 'zh', 'ru'].includes(locale)) {
+    if (locale && ['en', 'zh'].includes(locale)) {
       return locale as Locale;
     }
   } catch (error) {

@@ -1,92 +1,96 @@
-name: Auto Release
+name: Build & Release
 
 on:
   push:
-    branches:
-      - main
-    paths:
-      - 'package.json'
+    tags:
+      - 'v*'
 
 jobs:
-  check-version:
-    runs-on: ubuntu-latest
-    outputs:
-      version-changed: ${{ steps.check.outputs.changed }}
-      new-version: ${{ steps.check.outputs.version }}
+  build:
+    name: Build ${{ matrix.os }} (${{ matrix.target }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-latest
+            target: linux-x64
+            suffix: ''
+          - os: ubuntu-latest
+            target: linux-arm64
+            suffix: ''
+          - os: macos-13
+            target: macos-x64
+            suffix: ''
+          - os: macos-latest
+            target: macos-arm64
+            suffix: ''
+          - os: windows-latest
+            target: windows-x64
+            suffix: '.exe'
+
     steps:
       - uses: actions/checkout@v4
-        with:
-          fetch-depth: 2
 
-      - name: Check if version changed
-        id: check
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: bun install
+
+      - name: Build CLI executable
         run: |
-          CURRENT_VERSION=$(node -p "require('./package.json').version")
-          git checkout HEAD~1 -- package.json 2>/dev/null || echo "First commit"
-          PREVIOUS_VERSION=$(node -p "require('./package.json').version" 2>/dev/null || echo "0.0.0")
-          git checkout HEAD -- package.json
+          bun build --compile --target=bun-${{ matrix.target }} ./src/index.ts --outfile fuck-u-code-${{ matrix.target }}${{ matrix.suffix }}
 
-          echo "Current version: $CURRENT_VERSION"
-          echo "Previous version: $PREVIOUS_VERSION"
+      - name: Build MCP executable
+        run: |
+          bun build --compile --target=bun-${{ matrix.target }} ./src/mcp/server.ts --outfile fuck-u-code-mcp-${{ matrix.target }}${{ matrix.suffix }}
 
-          if [ "$CURRENT_VERSION" != "$PREVIOUS_VERSION" ]; then
-            echo "changed=true" >> $GITHUB_OUTPUT
-            echo "version=$CURRENT_VERSION" >> $GITHUB_OUTPUT
-          else
-            echo "changed=false" >> $GITHUB_OUTPUT
-          fi
-
-  ci:
-    needs: check-version
-    if: needs.check-version.outputs.version-changed == 'true'
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: actions/setup-node@v4
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
         with:
-          node-version: 20
-          cache: npm
+          name: ${{ matrix.target }}
+          path: |
+            fuck-u-code-${{ matrix.target }}${{ matrix.suffix }}
+            fuck-u-code-mcp-${{ matrix.target }}${{ matrix.suffix }}
 
-      - run: npm ci
-
-      - name: Lint
-        run: npm run lint
-
-      - name: Format check
-        run: npm run format:check
-
-      - name: Build
-        run: npm run build
-
-      - name: Test
-        run: npx vitest --run
-
-  create-release:
-    needs: [check-version, ci]
-    if: needs.check-version.outputs.version-changed == 'true'
+  release:
+    name: Create Release
+    needs: build
     runs-on: ubuntu-latest
     permissions:
       contents: write
+
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+          merge-multiple: true
+
+      - name: List artifacts
+        run: find artifacts -type f -exec file {} \;
 
       - name: Create Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: v${{ needs.check-version.outputs.new-version }}
-          name: Release v${{ needs.check-version.outputs.new-version }}
+          tag_name: ${{ github.ref_name }}
+          name: Release ${{ github.ref_name }}
           body: |
-            ## Changes in v${{ needs.check-version.outputs.new-version }}
+            ## ${{ github.ref_name }}
 
-            See [commits](https://github.com/${{ github.repository }}/commits/v${{ needs.check-version.outputs.new-version }}) for details.
+            Standalone executables — no Node.js or npm required.
 
-            ## Installation
+            | Platform | CLI | MCP Server |
+            | -------- | --- | ---------- |
+            | Linux x64 | `fuck-u-code-linux-x64` | `fuck-u-code-mcp-linux-x64` |
+            | Linux ARM64 | `fuck-u-code-linux-arm64` | `fuck-u-code-mcp-linux-arm64` |
+            | macOS x64 | `fuck-u-code-macos-x64` | `fuck-u-code-mcp-macos-x64` |
+            | macOS ARM64 | `fuck-u-code-macos-arm64` | `fuck-u-code-mcp-macos-arm64` |
+            | Windows x64 | `fuck-u-code-windows-x64.exe` | `fuck-u-code-mcp-windows-x64.exe` |
 
-            ```bash
-            npm install -g eff-u-code@${{ needs.check-version.outputs.new-version }}
-            ```
+            > This project is a fork of [Done-0/fuck-u-code](https://github.com/Done-0/fuck-u-code).
           draft: false
           prerelease: false
           generate_release_notes: true
           make_latest: true
+          files: artifacts/*

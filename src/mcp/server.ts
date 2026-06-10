@@ -128,10 +128,10 @@ server.registerTool(
           'How many of the worst-scoring files to include in the report. Higher values give more coverage but larger output.'
         ),
       locale: z
-        .enum(['en', 'zh', 'ru'])
+        .enum(['en', 'zh'])
         .optional()
         .default('en')
-        .describe('Output language: en (English), zh (Chinese), ru (Russian).'),
+        .describe('Output language: en (English), zh (Chinese).'),
     },
     annotations: {
       title: 'Analyze Code Quality',
@@ -211,10 +211,10 @@ server.registerTool(
           'How many of the worst files to review. Fewer files = faster. AI review is slower than plain analysis, so start small.'
         ),
       locale: z
-        .enum(['en', 'zh', 'ru'])
+        .enum(['en', 'zh'])
         .optional()
         .default('en')
-        .describe('Output language for review comments: en (English), zh (Chinese), ru (Russian).'),
+        .describe('Output language for review comments: en (English), zh (Chinese).'),
       verbose: z
         .boolean()
         .optional()

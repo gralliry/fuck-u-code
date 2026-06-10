@@ -23,7 +23,7 @@ interface AnalyzeOptions {
   output?: string;
   exclude?: string[];
   concurrency?: number;
-  locale?: 'en' | 'zh' | 'ru';
+  locale?: 'en' | 'zh';
 }
 
 export function createAnalyzeCommand(): Command {
@@ -41,7 +41,7 @@ export function createAnalyzeCommand(): Command {
     .option('-o, --output <file>', 'Write output to file instead of stdout')
     .option('-e, --exclude <patterns...>', 'Additional glob patterns to exclude')
     .option('-c, --concurrency <number>', 'Number of concurrent workers (default: 8)', parseInt)
-    .option('-l, --locale <locale>', 'Language: en, zh, ru (default: en)')
+    .option('-l, --locale <locale>', 'Language: en, zh (default: en)')
     .addHelpText(
       'after',
       `

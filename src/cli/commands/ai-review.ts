@@ -25,7 +25,7 @@ interface AIReviewOptions {
   baseUrl?: string;
   apiKey?: string;
   verbose?: boolean;
-  locale?: 'en' | 'zh' | 'ru';
+  locale?: 'en' | 'zh';
   top?: number;
   format?: 'console' | 'markdown' | 'html';
   output?: string;
@@ -43,7 +43,7 @@ export function createAIReviewCommand(): Command {
     .option('-k, --api-key <key>', 'API key (overrides config file)')
     .option('-t, --top <number>', 'Number of worst files to review (default: 5)', parseInt)
     .option('-v, --verbose', 'Show verbose output')
-    .option('-l, --locale <locale>', 'Language: en, zh, ru')
+    .option('-l, --locale <locale>', 'Language: en, zh')
     .option('-f, --format <format>', t('cmd_ai_review_format_help'))
     .option('-o, --output <file>', 'Write output to file instead of stdout')
     .addHelpText(

@@ -1,6 +1,4 @@
-# fuck-u-code [![English](https://img.shields.io/badge/Docs-English-red?style=flat-square)](README.md) [![繁體中文](https://img.shields.io/badge/文檔-繁體中文-blue?style=flat-square)](README_ZH-TW.md) [![中文](https://img.shields.io/badge/文档-简体中文-blue?style=flat-square)](README_ZH.md) [![Русский](https://img.shields.io/badge/Docs-Русский-blue?style=flat-square)](README_RU.md)
-
-<a href="https://trendshift.io/repositories/14999" target="_blank"><img src="https://trendshift.io/api/badge/repositories/14999" alt="Done-0%2Ffuck-u-code | Trendshift" style="width: 250px; height: 55px;" width="250" height="55"/></a>
+# fuck-u-code [![English](https://img.shields.io/badge/Docs-English-red?style=flat-square)](README.md) [![中文](https://img.shields.io/badge/文档-简体中文-blue?style=flat-square)](README_ZH.md)
 
 > [!Important]
 > 📢 Remember this command: `fuck-u-code` - let bad code have nowhere to hide!
@@ -14,27 +12,38 @@ A tool designed to **expose shitty code quality** with sharp but humorous feedba
 * **Shit-Gas Index**: Per-file score, higher = worse code
 * **Seven quality checks**: Complexity / Size / Comments / Error handling / Naming / Duplication / Structure
 * **AST parsing**: Accurate syntax analysis powered by tree-sitter
-* **AI code review**: Integrates OpenAI-compatible / Anthropic / DeepSeek / Gemini / Ollama
+* **AI code review**: Integrates OpenAI-compatible / Anthropic (DeepSeek, Ollama via custom base URL)
 * **Multiple output formats**: Colored terminal / Markdown / JSON / HTML
-* **i18n**: English / Chinese / Russian
+* **i18n**: English / Chinese
 * **Flexible config**: `.fuckucoderc.json` and more, project-level and global support
 
 > [!Note]
 > Code analysis runs fully offline — your code never leaves your machine.
-> AI review requires an external API or local Ollama.
+> AI review requires an external API.
+
+## Differences from the Original Library
+
+This fork is based on the original [`fuck-u-code`](https://github.com/Done-0/fuck-u-code) by **Done-0**, with a focus on **simplification and bug fixes**:
+
+| Aspect | Original (Done-0) | This Fork (gralliry) |
+| ------ | ----------------- | --------------------- |
+| **AI Providers** | 5 providers (OpenAI, Anthropic, DeepSeek, Gemini, Ollama) | **2 formats** (openai + anthropic). DeepSeek/Ollama still usable via custom `--base-url` |
+| **AI Config** | Mixed: env vars (`OPENAI_API_KEY`, `DEEPSEEK_API_KEY`, etc.) + config file + CLI | **Unified**: config file + CLI only, no env var auto-detection — simpler and more predictable |
+| **mcp-install** | Separate command to auto-configure MCP | **Removed** — MCP setup instructions are clear enough in docs |
+| **uninstall** | Removes global config, MCP entries (Claude/Cursor), and npm package | **Removed** — simplified: no global package management needed |
+| **MCP Server** | Basic tool registration | **Enhanced** — richer descriptions, tool annotations, `instructions`, parameter validation with min/max |
+| **Bug Fixes** | — | Fixed nested callback line counting, arrow function boundary detection, SSH URL regex, missing target dir error handling |
 
 ## Installation
 
-```bash
-npm install -g eff-u-code
-```
-
-Or build from source:
+Build from source:
 
 ```bash
-git clone https://github.com/Done-0/fuck-u-code.git
+git clone https://github.com/gralliry/fuck-u-code.git
 cd fuck-u-code && npm install && npm run build
 ```
+
+Or download the pre-built binary from the [Releases](https://github.com/gralliry/fuck-u-code/releases) page.
 
 ## Usage
 
@@ -61,32 +70,31 @@ fuck-u-code analyze . -e "**/*.test.ts"        # Exclude test files
 | `--output <file>`   | `-o`  | Write to file                      |
 | `--exclude <glob>`  | `-e`  | Additional exclude patterns        |
 | `--concurrency <n>` | `-c`  | Concurrent workers (default 8)     |
-| `--locale <lang>`   | `-l`  | Language: en/zh/ru/zh-tw           |
+| `--locale <lang>`   | `-l`  | Language: en/zh                     |
 
 ### AI Code Review
 
 Requires AI provider setup (see [AI Configuration](#ai-configuration)).
 
 ```bash
-fuck-u-code ai-review . -m gpt-4o                          # OpenAI-compatible
-fuck-u-code ai-review . -p anthropic -m claude-sonnet-4-5-20250929  # Anthropic
-fuck-u-code ai-review . -p ollama -m codellama              # Local Ollama
-fuck-u-code ai-review . -m gpt-4o -t 3                     # Review top 3 worst
-fuck-u-code ai-review . -m gpt-4o -f markdown -o review.md # Export Markdown
-fuck-u-code ai-review . -b https://your-api.com/v1 -k sk-xxx -m model # Custom endpoint
+fuck-u-code ai-review . -m gpt-4o                                    # OpenAI format
+fuck-u-code ai-review . -p anthropic -m claude-sonnet-4-5-20250929   # Anthropic format
+fuck-u-code ai-review . -m gpt-4o -t 3                               # Review top 3 worst
+fuck-u-code ai-review . -m gpt-4o -f markdown -o review.md           # Export Markdown
+fuck-u-code ai-review . -b https://api.deepseek.com/v1 -k sk-xxx -m deepseek-chat  # DeepSeek via OpenAI format
 ```
 
-| Option              | Short | Description                                       |
-| ------------------- | ----- | ------------------------------------------------- |
-| `--model <model>`   | `-m`  | Model name (required)                             |
-| `--provider <name>` | `-p`  | Provider: openai/anthropic/deepseek/gemini/ollama |
-| `--base-url <url>`  | `-b`  | Custom API endpoint                               |
-| `--api-key <key>`   | `-k`  | API key                                           |
+| Option              | Short | Description                         |
+| ------------------- | ----- | ----------------------------------- |
+| `--model <model>`   | `-m`  | Model name (required)               |
+| `--provider <name>` | `-p`  | Format: openai / anthropic          |
+| `--base-url <url>`  | `-b`  | Custom API endpoint                 |
+| `--api-key <key>`   | `-k`  | API key
 | `--top <n>`         | `-t`  | Review top N worst files (default 5)              |
 | `--format <fmt>`    | `-f`  | Format: console/markdown/html                     |
 | `--output <file>`   | `-o`  | Write to file                                     |
 | `--verbose`         | `-v`  | Verbose output                                    |
-| `--locale <lang>`   | `-l`  | Language: en/zh/ru                                |
+| `--locale <lang>`   | `-l`  | Language: en/zh                                  |
 
 ### Config Management
 
@@ -98,32 +106,6 @@ fuck-u-code config set ai.provider openai  # Set AI provider
 fuck-u-code config set ai.model gpt-4o     # Set AI model
 fuck-u-code config set ai.apiKey sk-xxx    # Set API key
 ```
-
-### Update
-
-Update eff-u-code to the latest version:
-
-```bash
-fuck-u-code update    # Update to latest version
-```
-
-This will:
-- Check current installed version
-- Check latest version on npm
-- Auto-install the latest version globally
-
-### Uninstall
-
-Remove fuck-u-code and clean up all local files:
-
-```bash
-fuck-u-code uninstall    # Remove global config, MCP entries, and npm package
-```
-
-This will remove:
-- Global config file (`~/.fuckucoderc.json`)
-- MCP server entries (Claude Code, Cursor)
-- Global npm package (`eff-u-code`)
 
 ## Configuration File
 
@@ -173,22 +155,17 @@ Full example (`.fuckucoderc.json`):
 
 ## AI Configuration
 
-Supports 5 providers. Priority: CLI flags > environment variables > config file.
+Supports 2 formats. Priority: CLI flags > config file (`~/.fuckucoderc.json`).
 
-| Provider          | Environment Variables                             | Example                                                  |
-| ----------------- | ------------------------------------------------- | -------------------------------------------------------- |
-| OpenAI-compatible | `OPENAI_API_KEY` `OPENAI_MODEL` `OPENAI_BASE_URL` | `ai-review . -m gpt-4o`                                  |
-| Anthropic         | `ANTHROPIC_API_KEY`                               | `ai-review . -p anthropic -m claude-sonnet-4-5-20250929` |
-| DeepSeek          | `DEEPSEEK_API_KEY`                                | `ai-review . -p deepseek -m deepseek-chat`               |
-| Gemini            | `GEMINI_API_KEY`                                  | `ai-review . -p gemini -m gemini-pro`                    |
-| Ollama            | `OLLAMA_HOST` (optional)                          | `ai-review . -p ollama -m codellama`                     |
+| Format            | Config Example                                         | CLI Example                                               |
+| ----------------- | ------------------------------------------------------ | --------------------------------------------------------- |
+| OpenAI-compatible | Set `ai.provider: "openai"` in config                  | `ai-review . -m gpt-4o`                                   |
+| Anthropic         | Set `ai.provider: "anthropic"` in config               | `ai-review . -p anthropic -m claude-sonnet-4-5-20250929`  |
+
+> **Note:** DeepSeek, Ollama, and other OpenAI-compatible APIs can be used via `--base-url` with the `openai` provider format.
 
 ```bash
-# OpenAI-compatible
-export OPENAI_API_KEY="sk-your-key"
-export OPENAI_BASE_URL="https://api.openai.com/v1"  # Optional
-
-# Or via config file
+# Set via config file
 fuck-u-code config set ai.provider openai
 fuck-u-code config set ai.model gpt-4o
 fuck-u-code config set ai.apiKey sk-your-key
@@ -201,17 +178,7 @@ fuck-u-code provides an MCP (Model Context Protocol) Server, allowing AI tools l
 
 ### Setup
 
-```bash
-# Global install
-npm install -g eff-u-code
-
-# Auto-configure (interactive)
-fuck-u-code mcp-install
-
-# Or specify target directly
-fuck-u-code mcp-install claude
-fuck-u-code mcp-install cursor
-```
+Build from source first, then configure your AI tool:
 
 **Claude Code** (`~/.claude.json` or project `.mcp.json`):
 
@@ -237,19 +204,6 @@ fuck-u-code mcp-install cursor
 }
 ```
 
-**Without global install (npx)**:
-
-```json
-{
-  "mcpServers": {
-    "fuck-u-code": {
-      "command": "npx",
-      "args": ["-y", "eff-u-code-mcp"]
-    }
-  }
-}
-```
-
 ### Available Tools
 
 - **analyze** — Analyze code quality and generate a score report
@@ -258,26 +212,6 @@ fuck-u-code mcp-install cursor
 ## File Exclusion
 
 The tool reads `.gitignore` files (including nested ones) and follows standard gitignore rules. For additional exclusions, use `--exclude` or the `exclude` config field.
+---
 
-## Feedback
-
-> 💬 Share your thoughts
-> Discord: <https://discord.gg/9ThNkAFGnT>
-
-## Contributing
-
-PRs welcome — let's improve **fuck-u-code** together 🚀
-
-## License
-
-MIT
-
-## Contact
-
-- fenderisfine@gmail.com
-- WeChat: l927171598
-
-## 💡 Discover More
-
-- **[Value Realization](https://github.com/Done-0/value-realization)** — Want to build the next breakout product like `fuck-u-code`? Use this AI skill to escape the developer's "echo chamber" and accurately validate real user needs.
-- **[Hermai.ai](https://hermai.ai)** — Say goodbye to fragile web scrapers. Instantly turn any website into a clean, stable JSON API without wrestling with DOM changes and anti-scraping protections.
+MIT License · Fork of [Done-0/fuck-u-code](https://github.com/Done-0/fuck-u-code) · ⭐ Star the original!

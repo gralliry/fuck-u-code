@@ -50,7 +50,7 @@ export const configSchema = z.object({
     .default({}),
   i18n: z
     .object({
-      locale: z.enum(['en', 'zh', 'ru']).optional().default('en'),
+      locale: z.enum(['en', 'zh']).optional().default('en'),
     })
     .optional()
     .default({}),

@@ -4,10 +4,8 @@
 
 import en from './locales/en.json' with { type: 'json' };
 import zh from './locales/zh.json' with { type: 'json' };
-import ru from './locales/ru.json' with { type: 'json' };
-import zhTW from './locales/zh_TW.json' with { type: 'json' };
 
-export type Locale = 'en' | 'zh' | 'ru' | 'zh_TW';
+export type Locale = 'en' | 'zh';
 
 type TranslationKey = keyof typeof en;
 type Translations = Record<TranslationKey, string>;
@@ -19,8 +17,6 @@ function assertTranslations<T extends Translations>(translations: T): T {
 const translations: Record<Locale, Translations> = {
   en: assertTranslations(en),
   zh: assertTranslations(zh),
-  ru: assertTranslations(ru),
-  zh_TW: assertTranslations(zhTW),
 };
 
 let currentLocale: Locale = 'en';
