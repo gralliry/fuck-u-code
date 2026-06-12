@@ -8,19 +8,19 @@
 import type { Language } from '../../parser/types.js';
 
 export interface ThresholdConfig {
-  excellent: number;
-  good: number;
-  acceptable: number;
-  poor: number;
+	excellent: number;
+	good: number;
+	acceptable: number;
+	poor: number;
 }
 
 export interface LanguageThresholds {
-  cyclomaticComplexity: ThresholdConfig;
-  cognitiveComplexity: ThresholdConfig;
-  functionLength: ThresholdConfig;
-  fileLength: ThresholdConfig;
-  parameterCount: ThresholdConfig;
-  nestingDepth: ThresholdConfig;
+	cyclomaticComplexity: ThresholdConfig;
+	cognitiveComplexity: ThresholdConfig;
+	functionLength: ThresholdConfig;
+	fileLength: ThresholdConfig;
+	parameterCount: ThresholdConfig;
+	nestingDepth: ThresholdConfig;
 }
 
 /**
@@ -32,12 +32,12 @@ export interface LanguageThresholds {
  * - staticcheck: no specific line limits, focuses on complexity
  */
 const GO_THRESHOLDS: LanguageThresholds = {
-  cyclomaticComplexity: { excellent: 5, good: 10, acceptable: 15, poor: 20 },
-  cognitiveComplexity: { excellent: 7, good: 15, acceptable: 25, poor: 35 },
-  functionLength: { excellent: 50, good: 100, acceptable: 200, poor: 300 },
-  fileLength: { excellent: 300, good: 500, acceptable: 1000, poor: 1500 },
-  parameterCount: { excellent: 3, good: 5, acceptable: 7, poor: 10 },
-  nestingDepth: { excellent: 3, good: 4, acceptable: 5, poor: 7 },
+	cyclomaticComplexity: { excellent: 5, good: 10, acceptable: 15, poor: 20 },
+	cognitiveComplexity: { excellent: 7, good: 15, acceptable: 25, poor: 35 },
+	functionLength: { excellent: 50, good: 100, acceptable: 200, poor: 300 },
+	fileLength: { excellent: 300, good: 500, acceptable: 1000, poor: 1500 },
+	parameterCount: { excellent: 3, good: 5, acceptable: 7, poor: 10 },
+	nestingDepth: { excellent: 3, good: 4, acceptable: 5, poor: 7 },
 };
 
 /**
@@ -50,12 +50,12 @@ const GO_THRESHOLDS: LanguageThresholds = {
  * - @typescript-eslint follows same conventions
  */
 const JAVASCRIPT_THRESHOLDS: LanguageThresholds = {
-  cyclomaticComplexity: { excellent: 5, good: 10, acceptable: 20, poor: 30 },
-  cognitiveComplexity: { excellent: 8, good: 15, acceptable: 25, poor: 40 },
-  functionLength: { excellent: 50, good: 100, acceptable: 200, poor: 300 },
-  fileLength: { excellent: 250, good: 400, acceptable: 800, poor: 1200 },
-  parameterCount: { excellent: 3, good: 4, acceptable: 6, poor: 8 },
-  nestingDepth: { excellent: 3, good: 4, acceptable: 5, poor: 7 },
+	cyclomaticComplexity: { excellent: 5, good: 10, acceptable: 20, poor: 30 },
+	cognitiveComplexity: { excellent: 8, good: 15, acceptable: 25, poor: 40 },
+	functionLength: { excellent: 50, good: 100, acceptable: 200, poor: 300 },
+	fileLength: { excellent: 250, good: 400, acceptable: 800, poor: 1200 },
+	parameterCount: { excellent: 3, good: 4, acceptable: 6, poor: 8 },
+	nestingDepth: { excellent: 3, good: 4, acceptable: 5, poor: 7 },
 };
 
 /**
@@ -69,12 +69,12 @@ const JAVASCRIPT_THRESHOLDS: LanguageThresholds = {
  * - McCabe complexity: threshold 10 (original paper recommendation)
  */
 const PYTHON_THRESHOLDS: LanguageThresholds = {
-  cyclomaticComplexity: { excellent: 5, good: 10, acceptable: 15, poor: 20 },
-  cognitiveComplexity: { excellent: 7, good: 12, acceptable: 20, poor: 30 },
-  functionLength: { excellent: 30, good: 50, acceptable: 100, poor: 150 },
-  fileLength: { excellent: 300, good: 500, acceptable: 1000, poor: 1500 },
-  parameterCount: { excellent: 3, good: 5, acceptable: 7, poor: 10 },
-  nestingDepth: { excellent: 3, good: 5, acceptable: 7, poor: 10 },
+	cyclomaticComplexity: { excellent: 5, good: 10, acceptable: 15, poor: 20 },
+	cognitiveComplexity: { excellent: 7, good: 12, acceptable: 20, poor: 30 },
+	functionLength: { excellent: 30, good: 50, acceptable: 100, poor: 150 },
+	fileLength: { excellent: 300, good: 500, acceptable: 1000, poor: 1500 },
+	parameterCount: { excellent: 3, good: 5, acceptable: 7, poor: 10 },
+	nestingDepth: { excellent: 3, good: 5, acceptable: 7, poor: 10 },
 };
 
 /**
@@ -87,12 +87,12 @@ const PYTHON_THRESHOLDS: LanguageThresholds = {
  * - PMD CyclomaticComplexity: default 10
  */
 const JAVA_THRESHOLDS: LanguageThresholds = {
-  cyclomaticComplexity: { excellent: 5, good: 10, acceptable: 15, poor: 20 },
-  cognitiveComplexity: { excellent: 8, good: 15, acceptable: 25, poor: 35 },
-  functionLength: { excellent: 50, good: 100, acceptable: 150, poor: 250 },
-  fileLength: { excellent: 300, good: 500, acceptable: 1000, poor: 1500 },
-  parameterCount: { excellent: 3, good: 5, acceptable: 7, poor: 10 },
-  nestingDepth: { excellent: 3, good: 4, acceptable: 5, poor: 7 },
+	cyclomaticComplexity: { excellent: 5, good: 10, acceptable: 15, poor: 20 },
+	cognitiveComplexity: { excellent: 8, good: 15, acceptable: 25, poor: 35 },
+	functionLength: { excellent: 50, good: 100, acceptable: 150, poor: 250 },
+	fileLength: { excellent: 300, good: 500, acceptable: 1000, poor: 1500 },
+	parameterCount: { excellent: 3, good: 5, acceptable: 7, poor: 10 },
+	nestingDepth: { excellent: 3, good: 4, acceptable: 5, poor: 7 },
 };
 
 /**
@@ -104,12 +104,12 @@ const JAVA_THRESHOLDS: LanguageThresholds = {
  * - SonarQube C: complexity threshold 10
  */
 const C_THRESHOLDS: LanguageThresholds = {
-  cyclomaticComplexity: { excellent: 5, good: 10, acceptable: 15, poor: 20 },
-  cognitiveComplexity: { excellent: 7, good: 12, acceptable: 20, poor: 30 },
-  functionLength: { excellent: 40, good: 80, acceptable: 150, poor: 250 },
-  fileLength: { excellent: 300, good: 500, acceptable: 1000, poor: 1500 },
-  parameterCount: { excellent: 3, good: 5, acceptable: 7, poor: 10 },
-  nestingDepth: { excellent: 3, good: 4, acceptable: 5, poor: 7 },
+	cyclomaticComplexity: { excellent: 5, good: 10, acceptable: 15, poor: 20 },
+	cognitiveComplexity: { excellent: 7, good: 12, acceptable: 20, poor: 30 },
+	functionLength: { excellent: 40, good: 80, acceptable: 150, poor: 250 },
+	fileLength: { excellent: 300, good: 500, acceptable: 1000, poor: 1500 },
+	parameterCount: { excellent: 3, good: 5, acceptable: 7, poor: 10 },
+	nestingDepth: { excellent: 3, good: 4, acceptable: 5, poor: 7 },
 };
 
 /**
@@ -121,12 +121,12 @@ const C_THRESHOLDS: LanguageThresholds = {
  * - SonarQube C++: complexity threshold 10
  */
 const CPP_THRESHOLDS: LanguageThresholds = {
-  cyclomaticComplexity: { excellent: 5, good: 10, acceptable: 15, poor: 20 },
-  cognitiveComplexity: { excellent: 8, good: 15, acceptable: 25, poor: 35 },
-  functionLength: { excellent: 50, good: 100, acceptable: 200, poor: 300 },
-  fileLength: { excellent: 300, good: 500, acceptable: 1000, poor: 1500 },
-  parameterCount: { excellent: 3, good: 5, acceptable: 7, poor: 10 },
-  nestingDepth: { excellent: 3, good: 4, acceptable: 5, poor: 7 },
+	cyclomaticComplexity: { excellent: 5, good: 10, acceptable: 15, poor: 20 },
+	cognitiveComplexity: { excellent: 8, good: 15, acceptable: 25, poor: 35 },
+	functionLength: { excellent: 50, good: 100, acceptable: 200, poor: 300 },
+	fileLength: { excellent: 300, good: 500, acceptable: 1000, poor: 1500 },
+	parameterCount: { excellent: 3, good: 5, acceptable: 7, poor: 10 },
+	nestingDepth: { excellent: 3, good: 4, acceptable: 5, poor: 7 },
 };
 
 /**
@@ -138,12 +138,12 @@ const CPP_THRESHOLDS: LanguageThresholds = {
  * - Rust API Guidelines: prefer small focused functions
  */
 const RUST_THRESHOLDS: LanguageThresholds = {
-  cyclomaticComplexity: { excellent: 5, good: 10, acceptable: 15, poor: 20 },
-  cognitiveComplexity: { excellent: 8, good: 15, acceptable: 25, poor: 35 },
-  functionLength: { excellent: 50, good: 100, acceptable: 200, poor: 300 },
-  fileLength: { excellent: 300, good: 500, acceptable: 1000, poor: 1500 },
-  parameterCount: { excellent: 3, good: 5, acceptable: 7, poor: 10 },
-  nestingDepth: { excellent: 3, good: 4, acceptable: 5, poor: 7 },
+	cyclomaticComplexity: { excellent: 5, good: 10, acceptable: 15, poor: 20 },
+	cognitiveComplexity: { excellent: 8, good: 15, acceptable: 25, poor: 35 },
+	functionLength: { excellent: 50, good: 100, acceptable: 200, poor: 300 },
+	fileLength: { excellent: 300, good: 500, acceptable: 1000, poor: 1500 },
+	parameterCount: { excellent: 3, good: 5, acceptable: 7, poor: 10 },
+	nestingDepth: { excellent: 3, good: 4, acceptable: 5, poor: 7 },
 };
 
 /**
@@ -155,12 +155,12 @@ const RUST_THRESHOLDS: LanguageThresholds = {
  * - Roslyn analyzers: follow similar patterns to Java
  */
 const CSHARP_THRESHOLDS: LanguageThresholds = {
-  cyclomaticComplexity: { excellent: 5, good: 10, acceptable: 15, poor: 20 },
-  cognitiveComplexity: { excellent: 8, good: 15, acceptable: 25, poor: 35 },
-  functionLength: { excellent: 50, good: 100, acceptable: 200, poor: 300 },
-  fileLength: { excellent: 300, good: 500, acceptable: 1000, poor: 1500 },
-  parameterCount: { excellent: 3, good: 5, acceptable: 7, poor: 10 },
-  nestingDepth: { excellent: 3, good: 4, acceptable: 5, poor: 7 },
+	cyclomaticComplexity: { excellent: 5, good: 10, acceptable: 15, poor: 20 },
+	cognitiveComplexity: { excellent: 8, good: 15, acceptable: 25, poor: 35 },
+	functionLength: { excellent: 50, good: 100, acceptable: 200, poor: 300 },
+	fileLength: { excellent: 300, good: 500, acceptable: 1000, poor: 1500 },
+	parameterCount: { excellent: 3, good: 5, acceptable: 7, poor: 10 },
+	nestingDepth: { excellent: 3, good: 4, acceptable: 5, poor: 7 },
 };
 
 /**
@@ -172,12 +172,12 @@ const CSHARP_THRESHOLDS: LanguageThresholds = {
  * - Using SonarQube defaults as fallback (no official Lua linter with complexity metrics)
  */
 const LUA_THRESHOLDS: LanguageThresholds = {
-  cyclomaticComplexity: { excellent: 5, good: 10, acceptable: 15, poor: 20 },
-  cognitiveComplexity: { excellent: 8, good: 15, acceptable: 25, poor: 35 },
-  functionLength: { excellent: 50, good: 100, acceptable: 200, poor: 300 },
-  fileLength: { excellent: 300, good: 500, acceptable: 1000, poor: 1500 },
-  parameterCount: { excellent: 3, good: 5, acceptable: 7, poor: 10 },
-  nestingDepth: { excellent: 3, good: 4, acceptable: 5, poor: 7 },
+	cyclomaticComplexity: { excellent: 5, good: 10, acceptable: 15, poor: 20 },
+	cognitiveComplexity: { excellent: 8, good: 15, acceptable: 25, poor: 35 },
+	functionLength: { excellent: 50, good: 100, acceptable: 200, poor: 300 },
+	fileLength: { excellent: 300, good: 500, acceptable: 1000, poor: 1500 },
+	parameterCount: { excellent: 3, good: 5, acceptable: 7, poor: 10 },
+	nestingDepth: { excellent: 3, good: 4, acceptable: 5, poor: 7 },
 };
 
 /**
@@ -189,12 +189,12 @@ const LUA_THRESHOLDS: LanguageThresholds = {
  * - SonarQube PHP: complexity threshold 10
  */
 const PHP_THRESHOLDS: LanguageThresholds = {
-  cyclomaticComplexity: { excellent: 5, good: 10, acceptable: 15, poor: 20 },
-  cognitiveComplexity: { excellent: 8, good: 15, acceptable: 25, poor: 35 },
-  functionLength: { excellent: 50, good: 100, acceptable: 200, poor: 300 },
-  fileLength: { excellent: 300, good: 500, acceptable: 1000, poor: 1500 },
-  parameterCount: { excellent: 3, good: 5, acceptable: 7, poor: 10 },
-  nestingDepth: { excellent: 3, good: 5, acceptable: 7, poor: 10 },
+	cyclomaticComplexity: { excellent: 5, good: 10, acceptable: 15, poor: 20 },
+	cognitiveComplexity: { excellent: 8, good: 15, acceptable: 25, poor: 35 },
+	functionLength: { excellent: 50, good: 100, acceptable: 200, poor: 300 },
+	fileLength: { excellent: 300, good: 500, acceptable: 1000, poor: 1500 },
+	parameterCount: { excellent: 3, good: 5, acceptable: 7, poor: 10 },
+	nestingDepth: { excellent: 3, good: 5, acceptable: 7, poor: 10 },
 };
 
 /**
@@ -206,12 +206,12 @@ const PHP_THRESHOLDS: LanguageThresholds = {
  * - Ruby Style Guide: prefer short methods
  */
 const RUBY_THRESHOLDS: LanguageThresholds = {
-  cyclomaticComplexity: { excellent: 4, good: 7, acceptable: 12, poor: 18 },
-  cognitiveComplexity: { excellent: 5, good: 8, acceptable: 15, poor: 25 },
-  functionLength: { excellent: 20, good: 50, acceptable: 100, poor: 200 },
-  fileLength: { excellent: 250, good: 400, acceptable: 800, poor: 1200 },
-  parameterCount: { excellent: 3, good: 4, acceptable: 6, poor: 8 },
-  nestingDepth: { excellent: 3, good: 4, acceptable: 5, poor: 7 },
+	cyclomaticComplexity: { excellent: 4, good: 7, acceptable: 12, poor: 18 },
+	cognitiveComplexity: { excellent: 5, good: 8, acceptable: 15, poor: 25 },
+	functionLength: { excellent: 20, good: 50, acceptable: 100, poor: 200 },
+	fileLength: { excellent: 250, good: 400, acceptable: 800, poor: 1200 },
+	parameterCount: { excellent: 3, good: 4, acceptable: 6, poor: 8 },
+	nestingDepth: { excellent: 3, good: 4, acceptable: 5, poor: 7 },
 };
 
 /**
@@ -223,12 +223,12 @@ const RUBY_THRESHOLDS: LanguageThresholds = {
  * - Apple Swift API Design Guidelines: prefer clarity
  */
 const SWIFT_THRESHOLDS: LanguageThresholds = {
-  cyclomaticComplexity: { excellent: 5, good: 10, acceptable: 20, poor: 30 },
-  cognitiveComplexity: { excellent: 7, good: 12, acceptable: 20, poor: 30 },
-  functionLength: { excellent: 30, good: 40, acceptable: 100, poor: 150 },
-  fileLength: { excellent: 200, good: 350, acceptable: 600, poor: 1000 },
-  parameterCount: { excellent: 3, good: 5, acceptable: 7, poor: 10 },
-  nestingDepth: { excellent: 3, good: 4, acceptable: 5, poor: 7 },
+	cyclomaticComplexity: { excellent: 5, good: 10, acceptable: 20, poor: 30 },
+	cognitiveComplexity: { excellent: 7, good: 12, acceptable: 20, poor: 30 },
+	functionLength: { excellent: 30, good: 40, acceptable: 100, poor: 150 },
+	fileLength: { excellent: 200, good: 350, acceptable: 600, poor: 1000 },
+	parameterCount: { excellent: 3, good: 5, acceptable: 7, poor: 10 },
+	nestingDepth: { excellent: 3, good: 4, acceptable: 5, poor: 7 },
 };
 
 /**
@@ -239,44 +239,44 @@ const SWIFT_THRESHOLDS: LanguageThresholds = {
  * - Using conservative thresholds due to shell script complexity
  */
 const SHELL_THRESHOLDS: LanguageThresholds = {
-  cyclomaticComplexity: { excellent: 5, good: 10, acceptable: 15, poor: 20 },
-  cognitiveComplexity: { excellent: 7, good: 12, acceptable: 20, poor: 30 },
-  functionLength: { excellent: 30, good: 50, acceptable: 100, poor: 150 },
-  fileLength: { excellent: 200, good: 300, acceptable: 600, poor: 1000 },
-  parameterCount: { excellent: 3, good: 5, acceptable: 7, poor: 10 },
-  nestingDepth: { excellent: 3, good: 4, acceptable: 5, poor: 7 },
+	cyclomaticComplexity: { excellent: 5, good: 10, acceptable: 15, poor: 20 },
+	cognitiveComplexity: { excellent: 7, good: 12, acceptable: 20, poor: 30 },
+	functionLength: { excellent: 30, good: 50, acceptable: 100, poor: 150 },
+	fileLength: { excellent: 200, good: 300, acceptable: 600, poor: 1000 },
+	parameterCount: { excellent: 3, good: 5, acceptable: 7, poor: 10 },
+	nestingDepth: { excellent: 3, good: 4, acceptable: 5, poor: 7 },
 };
 
 /**
  * Language-specific thresholds map
  */
 export const LANGUAGE_THRESHOLDS: Record<Exclude<Language, 'unknown'>, LanguageThresholds> = {
-  go: GO_THRESHOLDS,
-  javascript: JAVASCRIPT_THRESHOLDS,
-  typescript: JAVASCRIPT_THRESHOLDS, // TypeScript follows JavaScript conventions
-  python: PYTHON_THRESHOLDS,
-  java: JAVA_THRESHOLDS,
-  c: C_THRESHOLDS,
-  cpp: CPP_THRESHOLDS,
-  rust: RUST_THRESHOLDS,
-  csharp: CSHARP_THRESHOLDS,
-  lua: LUA_THRESHOLDS,
-  php: PHP_THRESHOLDS,
-  ruby: RUBY_THRESHOLDS,
-  swift: SWIFT_THRESHOLDS,
-  shell: SHELL_THRESHOLDS,
+	go: GO_THRESHOLDS,
+	javascript: JAVASCRIPT_THRESHOLDS,
+	typescript: JAVASCRIPT_THRESHOLDS, // TypeScript follows JavaScript conventions
+	python: PYTHON_THRESHOLDS,
+	java: JAVA_THRESHOLDS,
+	c: C_THRESHOLDS,
+	cpp: CPP_THRESHOLDS,
+	rust: RUST_THRESHOLDS,
+	csharp: CSHARP_THRESHOLDS,
+	lua: LUA_THRESHOLDS,
+	php: PHP_THRESHOLDS,
+	ruby: RUBY_THRESHOLDS,
+	swift: SWIFT_THRESHOLDS,
+	shell: SHELL_THRESHOLDS,
 };
 
 /**
  * Get thresholds for a specific language and metric
  */
 export function getThresholds(
-  language: Language,
-  metric: keyof LanguageThresholds
+	language: Language,
+	metric: keyof LanguageThresholds
 ): ThresholdConfig {
-  if (language === 'unknown') {
-    // Fallback to JavaScript thresholds for unknown languages
-    return JAVASCRIPT_THRESHOLDS[metric];
-  }
-  return LANGUAGE_THRESHOLDS[language][metric];
+	if (language === 'unknown') {
+		// Fallback to JavaScript thresholds for unknown languages
+		return JAVASCRIPT_THRESHOLDS[metric];
+	}
+	return LANGUAGE_THRESHOLDS[language][metric];
 }

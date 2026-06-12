@@ -6,9 +6,9 @@ import { t } from '../../i18n/index.js';
 
 /** Data structure for a single file's AI review result */
 export interface AIReviewData {
-  filePath: string;
-  score: number;
-  review: string;
+	filePath: string;
+	score: number;
+	review: string;
 }
 
 /**
@@ -16,39 +16,37 @@ export interface AIReviewData {
  * Each file gets its own section with score and the raw review content.
  */
 export function renderAIReviewMarkdown(reviews: AIReviewData[]): string {
-  const lines: string[] = [];
-  const title = t('ai_review_output_title');
+	const lines: string[] = [];
+	const title = t('ai_review_output_title');
 
-  lines.push(`# ${title}`);
-  lines.push('');
+	lines.push(`# ${title}`);
+	lines.push('');
 
-  // Table of contents
-  lines.push(`## ${t('output_table_of_contents')}`);
-  lines.push('');
-  for (const [i, { filePath }] of reviews.entries()) {
-    const anchor = filePath.replace(/[^a-zA-Z0-9-]/g, '-').toLowerCase();
-    lines.push(`${i + 1}. [${filePath}](#${anchor})`);
-  }
-  lines.push('');
-  lines.push('---');
-  lines.push('');
+	// Table of contents
+	lines.push(`## ${t('output_table_of_contents')}`);
+	lines.push('');
+	for (const [i, { filePath }] of reviews.entries()) {
+		const anchor = filePath.replace(/[^a-zA-Z0-9-]/g, '-').toLowerCase();
+		lines.push(`${i + 1}. [${filePath}](#${anchor})`);
+	}
+	lines.push('');
+	lines.push('---');
+	lines.push('');
 
-  for (const [i, { filePath, score, review }] of reviews.entries()) {
-    lines.push(`## ${i + 1}. ${filePath}`);
-    lines.push('');
-    lines.push(`**${t('report_file_score', { score: score.toFixed(1) })}**`);
-    lines.push('');
-    lines.push(review);
-    lines.push('');
-    lines.push('---');
-    lines.push('');
-  }
+	for (const [i, { filePath, score, review }] of reviews.entries()) {
+		lines.push(`## ${i + 1}. ${filePath}`);
+		lines.push('');
+		lines.push(`**${t('report_file_score', { score: score.toFixed(1) })}**`);
+		lines.push('');
+		lines.push(review);
+		lines.push('');
+		lines.push('---');
+		lines.push('');
+	}
 
-  lines.push(
-    `> ${t('output_generated_by', { tool: 'fuck-u-code' })}`
-  );
+	lines.push(`> ${t('output_generated_by', { tool: 'fuck-u-code' })}`);
 
-  return lines.join('\n');
+	return lines.join('\n');
 }
 
 /**
@@ -56,21 +54,21 @@ export function renderAIReviewMarkdown(reviews: AIReviewData[]): string {
  * Uses the same dark theme as the main HTML report (html.ts).
  */
 export function renderAIReviewHtml(reviews: AIReviewData[]): string {
-  const title = t('ai_review_output_title');
-  const fileCards = reviews
-    .map((r, i) => {
-      const scoreColor = r.score < 30 ? '#3fb950' : r.score < 60 ? '#d29922' : '#f85149';
-      return `    <div class="file-card">
+	const title = t('ai_review_output_title');
+	const fileCards = reviews
+		.map((r, i) => {
+			const scoreColor = r.score < 30 ? '#3fb950' : r.score < 60 ? '#d29922' : '#f85149';
+			return `    <div class="file-card">
       <div class="file-header">
         <span class="file-name">${i + 1}. ${escapeHtml(r.filePath)}</span>
         <span class="file-score" style="color:${scoreColor}">${t('report_file_score', { score: r.score.toFixed(1) })}</span>
       </div>
       <div class="review-content">${markdownToHtml(r.review)}</div>
     </div>`;
-    })
-    .join('\n');
+		})
+		.join('\n');
 
-  return `<!DOCTYPE html>
+	return `<!DOCTYPE html>
 <html lang="${t('html_lang')}">
 <head>
   <meta charset="UTF-8">
@@ -126,190 +124,190 @@ ${fileCards}
  * spans from being processed by bold/italic regex.
  */
 function markdownToHtml(markdown: string): string {
-  const lines = markdown.split('\n');
-  const output: string[] = [];
-  let inCodeBlock = false;
-  let codeFence = '';
-  const listStack: ('ul' | 'ol')[] = [];
-  let tableState: 'none' | 'head' | 'body' = 'none';
-  let blockquoteOpen = false;
+	const lines = markdown.split('\n');
+	const output: string[] = [];
+	let inCodeBlock = false;
+	let codeFence = '';
+	const listStack: ('ul' | 'ol')[] = [];
+	let tableState: 'none' | 'head' | 'body' = 'none';
+	let blockquoteOpen = false;
 
-  for (const raw of lines) {
-    // ── Fenced code block ──
-    const fenceMatch = /^(\s*)(```+|~~~+)(.*)/.exec(raw);
-    if (fenceMatch && (!inCodeBlock || isClosingFence(raw, codeFence))) {
-      if (inCodeBlock) {
-        output.push('</code></pre>');
-        inCodeBlock = false;
-        codeFence = '';
-      } else {
-        closeBlockquote();
-        closeAllLists();
-        closeTable();
-        const lang = (fenceMatch[3] ?? '').trim();
-        const langAttr = lang ? ` class="language-${escapeHtml(lang)}"` : '';
-        output.push(`<pre><code${langAttr}>`);
-        inCodeBlock = true;
-        codeFence = fenceMatch[2] ?? '';
-      }
-      continue;
-    }
+	for (const raw of lines) {
+		// ── Fenced code block ──
+		const fenceMatch = /^(\s*)(```+|~~~+)(.*)/.exec(raw);
+		if (fenceMatch && (!inCodeBlock || isClosingFence(raw, codeFence))) {
+			if (inCodeBlock) {
+				output.push('</code></pre>');
+				inCodeBlock = false;
+				codeFence = '';
+			} else {
+				closeBlockquote();
+				closeAllLists();
+				closeTable();
+				const lang = (fenceMatch[3] ?? '').trim();
+				const langAttr = lang ? ` class="language-${escapeHtml(lang)}"` : '';
+				output.push(`<pre><code${langAttr}>`);
+				inCodeBlock = true;
+				codeFence = fenceMatch[2] ?? '';
+			}
+			continue;
+		}
 
-    if (inCodeBlock) {
-      output.push(escapeHtml(raw));
-      continue;
-    }
+		if (inCodeBlock) {
+			output.push(escapeHtml(raw));
+			continue;
+		}
 
-    // ── Horizontal rule ──
-    if (/^(\s*)([-*_])\s*(\2\s*){2,}$/.test(raw)) {
-      closeBlockquote();
-      closeAllLists();
-      closeTable();
-      output.push('<hr>');
-      continue;
-    }
+		// ── Horizontal rule ──
+		if (/^(\s*)([-*_])\s*(\2\s*){2,}$/.test(raw)) {
+			closeBlockquote();
+			closeAllLists();
+			closeTable();
+			output.push('<hr>');
+			continue;
+		}
 
-    // ── ATX headings ──
-    const headingMatch = /^(#{1,6})\s+(.*?)(?:\s+#+\s*)?$/.exec(raw);
-    if (headingMatch) {
-      closeBlockquote();
-      closeAllLists();
-      closeTable();
-      const level = (headingMatch[1] ?? '').length;
-      output.push(`<h${level}>${inlineToHtml(headingMatch[2] ?? '')}</h${level}>`);
-      continue;
-    }
+		// ── ATX headings ──
+		const headingMatch = /^(#{1,6})\s+(.*?)(?:\s+#+\s*)?$/.exec(raw);
+		if (headingMatch) {
+			closeBlockquote();
+			closeAllLists();
+			closeTable();
+			const level = (headingMatch[1] ?? '').length;
+			output.push(`<h${level}>${inlineToHtml(headingMatch[2] ?? '')}</h${level}>`);
+			continue;
+		}
 
-    // ── Blockquote ──
-    const bqMatch = /^>\s?(.*)/.exec(raw);
-    if (bqMatch) {
-      closeAllLists();
-      closeTable();
-      if (!blockquoteOpen) {
-        output.push('<blockquote>');
-        blockquoteOpen = true;
-      }
-      const content = bqMatch[1] ?? '';
-      if (content.trim()) {
-        output.push(`<p>${inlineToHtml(content)}</p>`);
-      }
-      continue;
-    }
-    closeBlockquote();
+		// ── Blockquote ──
+		const bqMatch = /^>\s?(.*)/.exec(raw);
+		if (bqMatch) {
+			closeAllLists();
+			closeTable();
+			if (!blockquoteOpen) {
+				output.push('<blockquote>');
+				blockquoteOpen = true;
+			}
+			const content = bqMatch[1] ?? '';
+			if (content.trim()) {
+				output.push(`<p>${inlineToHtml(content)}</p>`);
+			}
+			continue;
+		}
+		closeBlockquote();
 
-    // ── Table rows ──
-    if (raw.trimStart().startsWith('|')) {
-      closeAllLists();
-      const cells = raw.split('|').slice(1, -1);
+		// ── Table rows ──
+		if (raw.trimStart().startsWith('|')) {
+			closeAllLists();
+			const cells = raw.split('|').slice(1, -1);
 
-      // Separator row → transition from head to body
-      if (cells.every((c) => /^[\s:-]+$/.test(c))) {
-        if (tableState === 'head') {
-          output.push('</thead>');
-          output.push('<tbody>');
-          tableState = 'body';
-        }
-        continue;
-      }
+			// Separator row → transition from head to body
+			if (cells.every((c) => /^[\s:-]+$/.test(c))) {
+				if (tableState === 'head') {
+					output.push('</thead>');
+					output.push('<tbody>');
+					tableState = 'body';
+				}
+				continue;
+			}
 
-      if (tableState === 'none') {
-        output.push('<table>');
-        output.push('<thead>');
-        tableState = 'head';
-        const ths = cells.map((c) => `<th>${inlineToHtml(c.trim())}</th>`).join('');
-        output.push(`<tr>${ths}</tr>`);
-      } else {
-        const tds = cells.map((c) => `<td>${inlineToHtml(c.trim())}</td>`).join('');
-        output.push(`<tr>${tds}</tr>`);
-      }
-      continue;
-    }
-    closeTable();
+			if (tableState === 'none') {
+				output.push('<table>');
+				output.push('<thead>');
+				tableState = 'head';
+				const ths = cells.map((c) => `<th>${inlineToHtml(c.trim())}</th>`).join('');
+				output.push(`<tr>${ths}</tr>`);
+			} else {
+				const tds = cells.map((c) => `<td>${inlineToHtml(c.trim())}</td>`).join('');
+				output.push(`<tr>${tds}</tr>`);
+			}
+			continue;
+		}
+		closeTable();
 
-    // ── Unordered list ──
-    const ulMatch = /^(\s*)[-*+]\s+(.*)/.exec(raw);
-    if (ulMatch) {
-      const depth = Math.floor((ulMatch[1] ?? '').length / 2);
-      adjustListStack('ul', depth);
-      output.push(`<li>${inlineToHtml(ulMatch[2] ?? '')}</li>`);
-      continue;
-    }
+		// ── Unordered list ──
+		const ulMatch = /^(\s*)[-*+]\s+(.*)/.exec(raw);
+		if (ulMatch) {
+			const depth = Math.floor((ulMatch[1] ?? '').length / 2);
+			adjustListStack('ul', depth);
+			output.push(`<li>${inlineToHtml(ulMatch[2] ?? '')}</li>`);
+			continue;
+		}
 
-    // ── Ordered list ──
-    const olMatch = /^(\s*)\d+[.)]\s+(.*)/.exec(raw);
-    if (olMatch) {
-      const depth = Math.floor((olMatch[1] ?? '').length / 3);
-      adjustListStack('ol', depth);
-      output.push(`<li>${inlineToHtml(olMatch[2] ?? '')}</li>`);
-      continue;
-    }
-    closeAllLists();
+		// ── Ordered list ──
+		const olMatch = /^(\s*)\d+[.)]\s+(.*)/.exec(raw);
+		if (olMatch) {
+			const depth = Math.floor((olMatch[1] ?? '').length / 3);
+			adjustListStack('ol', depth);
+			output.push(`<li>${inlineToHtml(olMatch[2] ?? '')}</li>`);
+			continue;
+		}
+		closeAllLists();
 
-    // ── Empty line ──
-    if (raw.trim() === '') {
-      output.push('');
-      continue;
-    }
+		// ── Empty line ──
+		if (raw.trim() === '') {
+			output.push('');
+			continue;
+		}
 
-    // ── Paragraph ──
-    output.push(`<p>${inlineToHtml(raw)}</p>`);
-  }
+		// ── Paragraph ──
+		output.push(`<p>${inlineToHtml(raw)}</p>`);
+	}
 
-  // Close any remaining open blocks
-  closeBlockquote();
-  closeAllLists();
-  closeTable();
-  if (inCodeBlock) output.push('</code></pre>');
+	// Close any remaining open blocks
+	closeBlockquote();
+	closeAllLists();
+	closeTable();
+	if (inCodeBlock) output.push('</code></pre>');
 
-  return output.join('\n');
+	return output.join('\n');
 
-  function closeBlockquote(): void {
-    if (blockquoteOpen) {
-      output.push('</blockquote>');
-      blockquoteOpen = false;
-    }
-  }
+	function closeBlockquote(): void {
+		if (blockquoteOpen) {
+			output.push('</blockquote>');
+			blockquoteOpen = false;
+		}
+	}
 
-  function closeTable(): void {
-    if (tableState === 'body') {
-      output.push('</tbody>');
-      output.push('</table>');
-    } else if (tableState === 'head') {
-      output.push('</thead>');
-      output.push('</table>');
-    }
-    tableState = 'none';
-  }
+	function closeTable(): void {
+		if (tableState === 'body') {
+			output.push('</tbody>');
+			output.push('</table>');
+		} else if (tableState === 'head') {
+			output.push('</thead>');
+			output.push('</table>');
+		}
+		tableState = 'none';
+	}
 
-  function adjustListStack(type: 'ul' | 'ol', targetDepth: number): void {
-    while (listStack.length > targetDepth + 1) {
-      const tag = listStack.pop();
-      if (tag) output.push(`</${tag}>`);
-    }
-    // Open new list or switch type at current depth
-    if (listStack.length <= targetDepth) {
-      while (listStack.length <= targetDepth) {
-        output.push(`<${type}>`);
-        listStack.push(type);
-      }
-    }
-  }
+	function adjustListStack(type: 'ul' | 'ol', targetDepth: number): void {
+		while (listStack.length > targetDepth + 1) {
+			const tag = listStack.pop();
+			if (tag) output.push(`</${tag}>`);
+		}
+		// Open new list or switch type at current depth
+		if (listStack.length <= targetDepth) {
+			while (listStack.length <= targetDepth) {
+				output.push(`<${type}>`);
+				listStack.push(type);
+			}
+		}
+	}
 
-  function closeAllLists(): void {
-    while (listStack.length > 0) {
-      const tag = listStack.pop();
-      if (tag) output.push(`</${tag}>`);
-    }
-  }
+	function closeAllLists(): void {
+		while (listStack.length > 0) {
+			const tag = listStack.pop();
+			if (tag) output.push(`</${tag}>`);
+		}
+	}
 }
 
 /** Check if a line closes the current fenced code block */
 function isClosingFence(line: string, openFence: string): boolean {
-  const trimmed = line.trimEnd();
-  const fenceChar = openFence[0] ?? '`';
-  const minLen = openFence.length;
-  if (!trimmed.startsWith(fenceChar.repeat(minLen))) return false;
-  return /^(`{3,}|~{3,})\s*$/.test(trimmed);
+	const trimmed = line.trimEnd();
+	const fenceChar = openFence[0] ?? '`';
+	const minLen = openFence.length;
+	if (!trimmed.startsWith(fenceChar.repeat(minLen))) return false;
+	return /^(`{3,}|~{3,})\s*$/.test(trimmed);
 }
 
 /**
@@ -320,52 +318,52 @@ function isClosingFence(line: string, openFence: string): boolean {
  * applied, placeholders are restored with the styled HTML.
  */
 function inlineToHtml(text: string): string {
-  let result = escapeHtml(text);
+	let result = escapeHtml(text);
 
-  // 1. Extract inline code into placeholders
-  const codeSpans: string[] = [];
-  result = result.replace(/`([^`]+)`/g, (_, code: string) => {
-    const idx = codeSpans.length;
-    codeSpans.push(`<code>${code}</code>`);
-    return `\x00CODE${idx}\x00`;
-  });
+	// 1. Extract inline code into placeholders
+	const codeSpans: string[] = [];
+	result = result.replace(/`([^`]+)`/g, (_, code: string) => {
+		const idx = codeSpans.length;
+		codeSpans.push(`<code>${code}</code>`);
+		return `\x00CODE${idx}\x00`;
+	});
 
-  // 2. Links: [text](url)
-  result = result.replace(
-    /\[([^\]]+)\]\(([^)]+)\)/g,
-    '<a href="$2" style="color:#58a6ff;text-decoration:none;">$1</a>'
-  );
+	// 2. Links: [text](url)
+	result = result.replace(
+		/\[([^\]]+)\]\(([^)]+)\)/g,
+		'<a href="$2" style="color:#58a6ff;text-decoration:none;">$1</a>'
+	);
 
-  // 3. Images: ![alt](url)
-  result = result.replace(
-    /!\[([^\]]*)\]\(([^)]+)\)/g,
-    '<img src="$2" alt="$1" style="max-width:100%;">'
-  );
+	// 3. Images: ![alt](url)
+	result = result.replace(
+		/!\[([^\]]*)\]\(([^)]+)\)/g,
+		'<img src="$2" alt="$1" style="max-width:100%;">'
+	);
 
-  // 4. Bold + italic (***text*** or ___text___)
-  result = result.replace(/(\*{3}|_{3})(.+?)\1/g, '<strong><em>$2</em></strong>');
+	// 4. Bold + italic (***text*** or ___text___)
+	result = result.replace(/(\*{3}|_{3})(.+?)\1/g, '<strong><em>$2</em></strong>');
 
-  // 5. Bold (**text** or __text__)
-  result = result.replace(/(\*{2}|_{2})(.+?)\1/g, '<strong>$2</strong>');
+	// 5. Bold (**text** or __text__)
+	result = result.replace(/(\*{2}|_{2})(.+?)\1/g, '<strong>$2</strong>');
 
-  // 6. Italic (*text* or _text_)
-  result = result.replace(/(?<![*_])([*_])(?!\1)(.+?)(?<!\1)\1(?!\1)/g, '<em>$2</em>');
+	// 6. Italic (*text* or _text_)
+	result = result.replace(/(?<![*_])([*_])(?!\1)(.+?)(?<!\1)\1(?!\1)/g, '<em>$2</em>');
 
-  // 7. Strikethrough (~~text~~)
-  result = result.replace(/~~(.+?)~~/g, '<del>$1</del>');
+	// 7. Strikethrough (~~text~~)
+	result = result.replace(/~~(.+?)~~/g, '<del>$1</del>');
 
-  // 8. Restore code placeholders
-  for (const [i, span] of codeSpans.entries()) {
-    result = result.replace(`\x00CODE${i}\x00`, span);
-  }
+	// 8. Restore code placeholders
+	for (const [i, span] of codeSpans.entries()) {
+		result = result.replace(`\x00CODE${i}\x00`, span);
+	}
 
-  return result;
+	return result;
 }
 
 function escapeHtml(text: string): string {
-  return text
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;');
+	return text
+		.replace(/&/g, '&amp;')
+		.replace(/</g, '&lt;')
+		.replace(/>/g, '&gt;')
+		.replace(/"/g, '&quot;');
 }

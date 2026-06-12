@@ -11,12 +11,12 @@ type TranslationKey = keyof typeof en;
 type Translations = Record<TranslationKey, string>;
 
 function assertTranslations<T extends Translations>(translations: T): T {
-  return translations;
+	return translations;
 }
 
 const translations: Record<Locale, Translations> = {
-  en: assertTranslations(en),
-  zh: assertTranslations(zh),
+	en: assertTranslations(en),
+	zh: assertTranslations(zh),
 };
 
 let currentLocale: Locale = 'en';
@@ -25,14 +25,14 @@ let currentLocale: Locale = 'en';
  * Set the current locale
  */
 export function setLocale(locale: Locale): void {
-  currentLocale = locale;
+	currentLocale = locale;
 }
 
 /**
  * Get the current locale
  */
 export function getLocale(): Locale {
-  return currentLocale;
+	return currentLocale;
 }
 
 /**
@@ -41,17 +41,17 @@ export function getLocale(): Locale {
  * @param params - Replacement parameters
  */
 export function t(key: string, params?: Record<string, string | number>): string {
-  const translation = translations[currentLocale][key as TranslationKey];
-  if (!translation) {
-    return key;
-  }
+	const translation = translations[currentLocale][key as TranslationKey];
+	if (!translation) {
+		return key;
+	}
 
-  if (!params) {
-    return translation;
-  }
+	if (!params) {
+		return translation;
+	}
 
-  return translation.replace(/\{(\w+)\}/g, (_, paramKey: string) => {
-    const value = params[paramKey];
-    return value !== undefined ? String(value) : `{${paramKey}}`;
-  });
+	return translation.replace(/\{(\w+)\}/g, (_, paramKey: string) => {
+		const value = params[paramKey];
+		return value !== undefined ? String(value) : `{${paramKey}}`;
+	});
 }

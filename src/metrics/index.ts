@@ -31,29 +31,29 @@ import type { Language } from '../parser/types.js';
  * Total: 100%
  */
 export function createMetrics(config: RuntimeConfig, language: Language): Metric[] {
-  const weights = config.metrics.weights;
+	const weights = config.metrics.weights;
 
-  const complexityWeight = weights.complexity;
-  const complexityMetricsCount = 3;
-  const complexityPerMetric = complexityWeight / complexityMetricsCount;
+	const complexityWeight = weights.complexity;
+	const complexityMetricsCount = 3;
+	const complexityPerMetric = complexityWeight / complexityMetricsCount;
 
-  const sizeWeight = weights.size;
-  const sizeMetricsCount = 3;
-  const sizePerMetric = sizeWeight / sizeMetricsCount;
+	const sizeWeight = weights.size;
+	const sizeMetricsCount = 3;
+	const sizePerMetric = sizeWeight / sizeMetricsCount;
 
-  return [
-    new CyclomaticComplexityMetric(complexityPerMetric, language),
-    new CognitiveComplexityMetric(complexityPerMetric, language),
-    new NestingDepthMetric(complexityPerMetric, language),
-    new FunctionLengthMetric(sizePerMetric, language),
-    new FileLengthMetric(sizePerMetric, language),
-    new ParameterCountMetric(sizePerMetric, language),
-    new CodeDuplicationMetric(weights.duplication),
-    new StructureAnalysisMetric(weights.structure),
-    new ErrorHandlingMetric(weights.error),
-    new CommentRatioMetric(weights.documentation),
-    new NamingConventionMetric(weights.naming),
-  ];
+	return [
+		new CyclomaticComplexityMetric(complexityPerMetric, language),
+		new CognitiveComplexityMetric(complexityPerMetric, language),
+		new NestingDepthMetric(complexityPerMetric, language),
+		new FunctionLengthMetric(sizePerMetric, language),
+		new FileLengthMetric(sizePerMetric, language),
+		new ParameterCountMetric(sizePerMetric, language),
+		new CodeDuplicationMetric(weights.duplication),
+		new StructureAnalysisMetric(weights.structure),
+		new ErrorHandlingMetric(weights.error),
+		new CommentRatioMetric(weights.documentation),
+		new NamingConventionMetric(weights.naming),
+	];
 }
 
 export type { Metric, MetricResult, MetricCategory, Severity } from './types.js';

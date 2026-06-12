@@ -9,7 +9,7 @@ import { t } from '../../i18n/index.js';
 
 /** Get localized code review system prompt */
 export function getCodeReviewPrompt(): string {
-  return `<role>
+	return `<role>
 ${t('ai_prompt_role')}
 </role>
 

@@ -3,9 +3,9 @@
  */
 
 import type {
-  ProjectAnalysisResult,
-  FileAnalysisResult,
-  MetricResult,
+	ProjectAnalysisResult,
+	FileAnalysisResult,
+	MetricResult,
 } from '../../metrics/types.js';
 import type { RuntimeConfig } from '../../config/schema.js';
 import { t } from '../../i18n/index.js';
@@ -13,40 +13,40 @@ import { LANGUAGE_DISPLAY_NAMES, type Language } from '../../parser/types.js';
 import { aggregateProjectStats, collectWorstFunctions } from './stats.js';
 
 interface QualityLevel {
-  minScore: number;
-  nameKey: string;
-  descKey: string;
-  emoji: string;
+	minScore: number;
+	nameKey: string;
+	descKey: string;
+	emoji: string;
 }
 
 const QUALITY_LEVELS: QualityLevel[] = [
-  { minScore: 0, nameKey: 'level_clean', descKey: 'level_clean_desc', emoji: '🌱' },
-  { minScore: 5, nameKey: 'level_mild', descKey: 'level_mild_desc', emoji: '🌸' },
-  { minScore: 15, nameKey: 'level_moderate', descKey: 'level_moderate_desc', emoji: '😐' },
-  { minScore: 25, nameKey: 'level_bad', descKey: 'level_bad_desc', emoji: '😷' },
-  { minScore: 40, nameKey: 'level_terrible', descKey: 'level_terrible_desc', emoji: '💩' },
-  { minScore: 55, nameKey: 'level_disaster', descKey: 'level_disaster_desc', emoji: '🤕' },
-  { minScore: 65, nameKey: 'level_severe', descKey: 'level_severe_desc', emoji: '☣️' },
-  { minScore: 75, nameKey: 'level_very_bad', descKey: 'level_very_bad_desc', emoji: '🧟' },
-  { minScore: 85, nameKey: 'level_extreme', descKey: 'level_extreme_desc', emoji: '☢️' },
-  { minScore: 95, nameKey: 'level_worst', descKey: 'level_worst_desc', emoji: '🪦' },
-  { minScore: 100, nameKey: 'level_ultimate', descKey: 'level_ultimate_desc', emoji: '👑💩' },
+	{ minScore: 0, nameKey: 'level_clean', descKey: 'level_clean_desc', emoji: '🌱' },
+	{ minScore: 5, nameKey: 'level_mild', descKey: 'level_mild_desc', emoji: '🌸' },
+	{ minScore: 15, nameKey: 'level_moderate', descKey: 'level_moderate_desc', emoji: '😐' },
+	{ minScore: 25, nameKey: 'level_bad', descKey: 'level_bad_desc', emoji: '😷' },
+	{ minScore: 40, nameKey: 'level_terrible', descKey: 'level_terrible_desc', emoji: '💩' },
+	{ minScore: 55, nameKey: 'level_disaster', descKey: 'level_disaster_desc', emoji: '🤕' },
+	{ minScore: 65, nameKey: 'level_severe', descKey: 'level_severe_desc', emoji: '☣️' },
+	{ minScore: 75, nameKey: 'level_very_bad', descKey: 'level_very_bad_desc', emoji: '🧟' },
+	{ minScore: 85, nameKey: 'level_extreme', descKey: 'level_extreme_desc', emoji: '☢️' },
+	{ minScore: 95, nameKey: 'level_worst', descKey: 'level_worst_desc', emoji: '🪦' },
+	{ minScore: 100, nameKey: 'level_ultimate', descKey: 'level_ultimate_desc', emoji: '👑💩' },
 ];
 
 export class HtmlOutput {
-  private config: RuntimeConfig;
+	private config: RuntimeConfig;
 
-  constructor(config: RuntimeConfig) {
-    this.config = config;
-  }
+	constructor(config: RuntimeConfig) {
+		this.config = config;
+	}
 
-  render(result: ProjectAnalysisResult): string {
-    const invertedScore = 100 - result.overallScore;
-    const level = this.getQualityLevel(invertedScore);
-    const scoreColor = this.getScoreColor(result.overallScore);
-    const verbose = this.config.verbose;
+	render(result: ProjectAnalysisResult): string {
+		const invertedScore = 100 - result.overallScore;
+		const level = this.getQualityLevel(invertedScore);
+		const scoreColor = this.getScoreColor(result.overallScore);
+		const verbose = this.config.verbose;
 
-    return `<!DOCTYPE html>
+		return `<!DOCTYPE html>
 <html lang="${t('html_lang')}">
 <head>
   <meta charset="UTF-8">
@@ -153,103 +153,109 @@ ${verbose ? this.renderWorstFunctionsSection(result) : ''}
   </div>
 </body>
 </html>`;
-  }
+	}
 
-  private renderMetricsRows(result: ProjectAnalysisResult): string {
-    const verbose = this.config.verbose;
-    return result.aggregatedMetrics
-      .map((metric) => {
-        const inverted = 100 - metric.average;
-        const status = this.getStatusEmoji(inverted);
-        const metricName = t(`metric_${metric.name}`) || metric.name;
-        const cssClass = inverted < 30 ? 'good' : inverted < 60 ? 'warn' : 'bad';
-        const minMax = verbose
-          ? `<td class="good">${(100 - metric.max).toFixed(1)}%</td><td class="bad">${(100 - metric.min).toFixed(1)}%</td><td class="warn">${(100 - metric.median).toFixed(1)}%</td>`
-          : '';
-        return `        <tr><td>${metricName}</td><td class="${cssClass}">${inverted.toFixed(1)}%</td>${minMax}<td>${status}</td></tr>`;
-      })
-      .join('\n');
-  }
+	private renderMetricsRows(result: ProjectAnalysisResult): string {
+		const verbose = this.config.verbose;
+		return result.aggregatedMetrics
+			.map((metric) => {
+				const inverted = 100 - metric.average;
+				const status = this.getStatusEmoji(inverted);
+				const metricName = t(`metric_${metric.name}`) || metric.name;
+				const cssClass = inverted < 30 ? 'good' : inverted < 60 ? 'warn' : 'bad';
+				const minMax = verbose
+					? `<td class="good">${(100 - metric.max).toFixed(1)}%</td><td class="bad">${(100 - metric.min).toFixed(1)}%</td><td class="warn">${(100 - metric.median).toFixed(1)}%</td>`
+					: '';
+				return `        <tr><td>${metricName}</td><td class="${cssClass}">${inverted.toFixed(1)}%</td>${minMax}<td>${status}</td></tr>`;
+			})
+			.join('\n');
+	}
 
-  private renderWorstFiles(fileResults: FileAnalysisResult[]): string {
-    const top = this.config.output.top;
-    const verbose = this.config.verbose;
-    const maxIssues = verbose ? Infinity : this.config.output.maxIssues;
-    const worst = [...fileResults].sort((a, b) => a.score - b.score).slice(0, top);
+	private renderWorstFiles(fileResults: FileAnalysisResult[]): string {
+		const top = this.config.output.top;
+		const verbose = this.config.verbose;
+		const maxIssues = verbose ? Infinity : this.config.output.maxIssues;
+		const worst = [...fileResults].sort((a, b) => a.score - b.score).slice(0, top);
 
-    if (worst.length === 0) {
-      return `    <p class="good">🎉 ${t('report_no_issues')}</p>`;
-    }
+		if (worst.length === 0) {
+			return `    <p class="good">🎉 ${t('report_no_issues')}</p>`;
+		}
 
-    return worst
-      .map((file, i) => {
-        const inverted = 100 - file.score;
-        const cssClass = file.score >= 70 ? 'good' : file.score >= 40 ? 'warn' : 'bad';
-        const categories = this.categorizeIssues(file.metrics);
-        const categoryHtml = Object.entries(categories)
-          .filter(([, count]) => count > 0)
-          .map(
-            ([cat, count]) =>
-              `<span class="category-tag">${t(`issue_category_${cat}`)}: ${count}</span>`
-          )
-          .join('');
+		return worst
+			.map((file, i) => {
+				const inverted = 100 - file.score;
+				const cssClass = file.score >= 70 ? 'good' : file.score >= 40 ? 'warn' : 'bad';
+				const categories = this.categorizeIssues(file.metrics);
+				const categoryHtml = Object.entries(categories)
+					.filter(([, count]) => count > 0)
+					.map(
+						([cat, count]) =>
+							`<span class="category-tag">${t(`issue_category_${cat}`)}: ${count}</span>`
+					)
+					.join('');
 
-        // Per-file metric scores (verbose)
-        let metricScoresHtml = '';
-        if (verbose && file.metrics.length > 0) {
-          const scores = file.metrics
-            .map((m) => {
-              const metricName = t(`metric_${m.name}`) || m.name;
-              const cls =
-                m.normalizedScore >= 70 ? 'good' : m.normalizedScore >= 40 ? 'warn' : 'bad';
-              return `<span class="metric-score ${cls}">${metricName}: ${m.normalizedScore.toFixed(0)}</span>`;
-            })
-            .join('');
-          metricScoresHtml = `<div class="metric-scores">${scores}</div>`;
-        }
+				// Per-file metric scores (verbose)
+				let metricScoresHtml = '';
+				if (verbose && file.metrics.length > 0) {
+					const scores = file.metrics
+						.map((m) => {
+							const metricName = t(`metric_${m.name}`) || m.name;
+							const cls =
+								m.normalizedScore >= 70
+									? 'good'
+									: m.normalizedScore >= 40
+										? 'warn'
+										: 'bad';
+							return `<span class="metric-score ${cls}">${metricName}: ${m.normalizedScore.toFixed(0)}</span>`;
+						})
+						.join('');
+					metricScoresHtml = `<div class="metric-scores">${scores}</div>`;
+				}
 
-        // Function details table (verbose)
-        let funcTableHtml = '';
-        if (verbose && file.parseResult.functions.length > 0) {
-          const sortedFuncs = [...file.parseResult.functions].sort(
-            (a, b) => b.complexity - a.complexity
-          );
-          const rows = sortedFuncs
-            .map((fn) => {
-              const cxClass = fn.complexity > 15 ? 'bad' : fn.complexity > 10 ? 'warn' : 'good';
-              const nestClass = fn.nestingDepth > 4 ? 'bad' : fn.nestingDepth > 3 ? 'warn' : 'good';
-              return `<tr><td><code>${this.escapeHtml(fn.name)}</code></td><td>L${fn.startLine}-${fn.endLine}</td><td class="${cxClass}">${fn.complexity}</td><td class="${nestClass}">${fn.nestingDepth}</td><td>${fn.lineCount}</td><td>${fn.hasDocstring ? '✓' : '✗'}</td></tr>`;
-            })
-            .join('');
-          funcTableHtml = `
+				// Function details table (verbose)
+				let funcTableHtml = '';
+				if (verbose && file.parseResult.functions.length > 0) {
+					const sortedFuncs = [...file.parseResult.functions].sort(
+						(a, b) => b.complexity - a.complexity
+					);
+					const rows = sortedFuncs
+						.map((fn) => {
+							const cxClass =
+								fn.complexity > 15 ? 'bad' : fn.complexity > 10 ? 'warn' : 'good';
+							const nestClass =
+								fn.nestingDepth > 4 ? 'bad' : fn.nestingDepth > 3 ? 'warn' : 'good';
+							return `<tr><td><code>${this.escapeHtml(fn.name)}</code></td><td>L${fn.startLine}-${fn.endLine}</td><td class="${cxClass}">${fn.complexity}</td><td class="${nestClass}">${fn.nestingDepth}</td><td>${fn.lineCount}</td><td>${fn.hasDocstring ? '✓' : '✗'}</td></tr>`;
+						})
+						.join('');
+					funcTableHtml = `
       <h3>${t('verbose_function_details')}</h3>
       <table class="func-table">
         <thead><tr><th>${t('verbose_col_function')}</th><th>${t('verbose_col_range')}</th><th>${t('verbose_col_complexity')}</th><th>${t('verbose_col_nesting')}</th><th>${t('verbose_col_line_count')}</th><th>${t('verbose_col_docstring')}</th></tr></thead>
         <tbody>${rows}</tbody>
       </table>`;
-        }
+				}
 
-        const allIssues = file.metrics
-          .filter((m) => m.severity !== 'info')
-          .flatMap((m) => m.locations || []);
-        const issues = allIssues.slice(0, maxIssues);
+				const allIssues = file.metrics
+					.filter((m) => m.severity !== 'info')
+					.flatMap((m) => m.locations || []);
+				const issues = allIssues.slice(0, maxIssues);
 
-        let issueHtml = '';
-        if (issues.length > 0) {
-          const issueItems = issues
-            .map((issue) => {
-              const funcInfo = issue.functionName
-                ? `<code>${this.escapeHtml(issue.functionName)}()</code> `
-                : '';
-              const lineInfo = issue.line ? `L${issue.line}: ` : '';
-              return `<li>${funcInfo}${lineInfo}${this.escapeHtml(issue.message || '')}</li>`;
-            })
-            .join('');
-          const countLabel = verbose ? ` <small>(${allIssues.length})</small>` : '';
-          issueHtml = `<ul class="issue-list">${countLabel}${issueItems}</ul>`;
-        }
+				let issueHtml = '';
+				if (issues.length > 0) {
+					const issueItems = issues
+						.map((issue) => {
+							const funcInfo = issue.functionName
+								? `<code>${this.escapeHtml(issue.functionName)}()</code> `
+								: '';
+							const lineInfo = issue.line ? `L${issue.line}: ` : '';
+							return `<li>${funcInfo}${lineInfo}${this.escapeHtml(issue.message || '')}</li>`;
+						})
+						.join('');
+					const countLabel = verbose ? ` <small>(${allIssues.length})</small>` : '';
+					issueHtml = `<ul class="issue-list">${countLabel}${issueItems}</ul>`;
+				}
 
-        return `    <div class="file-card">
+				return `    <div class="file-card">
       <div class="file-header">
         <span class="file-name">${i + 1}. ${this.escapeHtml(file.filePath)}</span>
         <span class="file-score ${cssClass}">${t('report_file_score', { score: inverted.toFixed(1) })}</span>
@@ -259,24 +265,25 @@ ${verbose ? this.renderWorstFunctionsSection(result) : ''}
       ${issueHtml}
       ${funcTableHtml}
     </div>`;
-      })
-      .join('\n');
-  }
+			})
+			.join('\n');
+	}
 
-  private renderProjectOverview(result: ProjectAnalysisResult): string {
-    const stats = aggregateProjectStats(result);
+	private renderProjectOverview(result: ProjectAnalysisResult): string {
+		const stats = aggregateProjectStats(result);
 
-    const langBarsHtml = stats.languageCounts
-      .map(([lang, count]) => {
-        const displayName = LANGUAGE_DISPLAY_NAMES[lang as Exclude<Language, 'unknown'>] || lang;
-        const firstEntry = stats.languageCounts[0];
-        const maxCount = firstEntry ? firstEntry[1] : 1;
-        const barWidth = Math.max(4, Math.round((count / maxCount) * 100));
-        return `<div class="lang-bar"><span class="name">${this.escapeHtml(displayName)}</span><span class="bar" style="width:${barWidth}px"></span><span class="count">${count}</span></div>`;
-      })
-      .join('');
+		const langBarsHtml = stats.languageCounts
+			.map(([lang, count]) => {
+				const displayName =
+					LANGUAGE_DISPLAY_NAMES[lang as Exclude<Language, 'unknown'>] || lang;
+				const firstEntry = stats.languageCounts[0];
+				const maxCount = firstEntry ? firstEntry[1] : 1;
+				const barWidth = Math.max(4, Math.round((count / maxCount) * 100));
+				return `<div class="lang-bar"><span class="name">${this.escapeHtml(displayName)}</span><span class="bar" style="width:${barWidth}px"></span><span class="count">${count}</span></div>`;
+			})
+			.join('');
 
-    return `    <h2>📋 ${t('verbose_project_overview')}</h2>
+		return `    <h2>📋 ${t('verbose_project_overview')}</h2>
     <div class="overview-grid">
       <div class="overview-card">
         <h3>${t('output_statistics')}</h3>
@@ -292,85 +299,86 @@ ${verbose ? this.renderWorstFunctionsSection(result) : ''}
       </div>
     </div>
 `;
-  }
+	}
 
-  private renderWorstFunctionsSection(result: ProjectAnalysisResult): string {
-    const top10 = collectWorstFunctions(result, 10);
-    if (top10.length === 0) return '';
+	private renderWorstFunctionsSection(result: ProjectAnalysisResult): string {
+		const top10 = collectWorstFunctions(result, 10);
+		if (top10.length === 0) return '';
 
-    const rows = top10
-      .map((fn) => {
-        const cxClass = fn.complexity > 15 ? 'bad' : fn.complexity > 10 ? 'warn' : 'good';
-        const nestClass = fn.nestingDepth > 4 ? 'bad' : fn.nestingDepth > 3 ? 'warn' : 'good';
-        return `<tr><td><code>${this.escapeHtml(fn.name)}</code></td><td>${this.escapeHtml(fn.filePath)}</td><td class="${cxClass}">${fn.complexity}</td><td class="${nestClass}">${fn.nestingDepth}</td><td>${fn.lineCount}</td></tr>`;
-      })
-      .join('');
+		const rows = top10
+			.map((fn) => {
+				const cxClass = fn.complexity > 15 ? 'bad' : fn.complexity > 10 ? 'warn' : 'good';
+				const nestClass =
+					fn.nestingDepth > 4 ? 'bad' : fn.nestingDepth > 3 ? 'warn' : 'good';
+				return `<tr><td><code>${this.escapeHtml(fn.name)}</code></td><td>${this.escapeHtml(fn.filePath)}</td><td class="${cxClass}">${fn.complexity}</td><td class="${nestClass}">${fn.nestingDepth}</td><td>${fn.lineCount}</td></tr>`;
+			})
+			.join('');
 
-    return `
+		return `
     <h2>🔥 ${t('verbose_top_worst_functions')}</h2>
     <table>
       <thead><tr><th>${t('verbose_col_function')}</th><th>${t('verbose_col_file')}</th><th>${t('verbose_col_complexity')}</th><th>${t('verbose_col_nesting')}</th><th>${t('verbose_col_line_count')}</th></tr></thead>
       <tbody>${rows}</tbody>
     </table>
 `;
-  }
+	}
 
-  private categorizeIssues(metrics: MetricResult[]): Record<string, number> {
-    const categoryMap: Record<string, string> = {
-      complexity: 'complexity',
-      documentation: 'comment',
-      naming: 'naming',
-      structure: 'structure',
-      duplication: 'duplication',
-      error: 'error',
-      size: 'other',
-    };
+	private categorizeIssues(metrics: MetricResult[]): Record<string, number> {
+		const categoryMap: Record<string, string> = {
+			complexity: 'complexity',
+			documentation: 'comment',
+			naming: 'naming',
+			structure: 'structure',
+			duplication: 'duplication',
+			error: 'error',
+			size: 'other',
+		};
 
-    const categories: Record<string, number> = {};
-    for (const metric of metrics) {
-      if (metric.severity === 'info') continue;
-      const category = categoryMap[metric.category] || 'other';
-      categories[category] = (categories[category] || 0) + (metric.locations?.length || 1);
-    }
-    return categories;
-  }
+		const categories: Record<string, number> = {};
+		for (const metric of metrics) {
+			if (metric.severity === 'info') continue;
+			const category = categoryMap[metric.category] || 'other';
+			categories[category] = (categories[category] || 0) + (metric.locations?.length || 1);
+		}
+		return categories;
+	}
 
-  private getQualityLevel(invertedScore: number): QualityLevel {
-    for (let i = QUALITY_LEVELS.length - 1; i >= 0; i--) {
-      const level = QUALITY_LEVELS[i];
-      if (level && invertedScore >= level.minScore) return level;
-    }
-    const defaultLevel = QUALITY_LEVELS[0];
-    return (
-      defaultLevel ?? {
-        minScore: 0,
-        nameKey: 'level_clean',
-        descKey: 'level_clean_desc',
-        emoji: '🌱',
-      }
-    );
-  }
+	private getQualityLevel(invertedScore: number): QualityLevel {
+		for (let i = QUALITY_LEVELS.length - 1; i >= 0; i--) {
+			const level = QUALITY_LEVELS[i];
+			if (level && invertedScore >= level.minScore) return level;
+		}
+		const defaultLevel = QUALITY_LEVELS[0];
+		return (
+			defaultLevel ?? {
+				minScore: 0,
+				nameKey: 'level_clean',
+				descKey: 'level_clean_desc',
+				emoji: '🌱',
+			}
+		);
+	}
 
-  private getStatusEmoji(invertedScore: number): string {
-    if (invertedScore < 20) return '✅';
-    if (invertedScore < 40) return '✓';
-    if (invertedScore < 60) return '⚠️';
-    if (invertedScore < 80) return '❗';
-    return '❌';
-  }
+	private getStatusEmoji(invertedScore: number): string {
+		if (invertedScore < 20) return '✅';
+		if (invertedScore < 40) return '✓';
+		if (invertedScore < 60) return '⚠️';
+		if (invertedScore < 80) return '❗';
+		return '❌';
+	}
 
-  private getScoreColor(score: number): string {
-    if (score >= 80) return '#3fb950';
-    if (score >= 60) return '#58a6ff';
-    if (score >= 40) return '#d29922';
-    return '#f85149';
-  }
+	private getScoreColor(score: number): string {
+		if (score >= 80) return '#3fb950';
+		if (score >= 60) return '#58a6ff';
+		if (score >= 40) return '#d29922';
+		return '#f85149';
+	}
 
-  private escapeHtml(text: string): string {
-    return text
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;');
-  }
+	private escapeHtml(text: string): string {
+		return text
+			.replace(/&/g, '&amp;')
+			.replace(/</g, '&lt;')
+			.replace(/>/g, '&gt;')
+			.replace(/"/g, '&quot;');
+	}
 }

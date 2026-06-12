@@ -11,109 +11,119 @@ import { t } from '../../i18n/index.js';
 import { getThresholds } from '../thresholds/language-thresholds.js';
 
 export class FunctionLengthMetric implements Metric {
-  readonly name = 'function_length';
-  readonly category: MetricCategory = 'size';
-  readonly weight: number;
-  private readonly language: Language;
+	readonly name = 'function_length';
+	readonly category: MetricCategory = 'size';
+	readonly weight: number;
+	private readonly language: Language;
 
-  constructor(weight: number, language: Language) {
-    this.weight = weight;
-    this.language = language;
-  }
+	constructor(weight: number, language: Language) {
+		this.weight = weight;
+		this.language = language;
+	}
 
-  calculate(parseResult: ParseResult): MetricResult {
-    const { functions, filePath } = parseResult;
-    const thresholds = getThresholds(this.language, 'functionLength');
+	calculate(parseResult: ParseResult): MetricResult {
+		const { functions, filePath } = parseResult;
+		const thresholds = getThresholds(this.language, 'functionLength');
 
-    if (functions.length === 0) {
-      return {
-        name: this.name,
-        category: this.category,
-        value: 0,
-        normalizedScore: 100,
-        severity: 'info',
-        details: t('detail_no_functions'),
-      };
-    }
+		if (functions.length === 0) {
+			return {
+				name: this.name,
+				category: this.category,
+				value: 0,
+				normalizedScore: 100,
+				severity: 'info',
+				details: t('detail_no_functions'),
+			};
+		}
 
-    let totalLength = 0;
-    let maxLength = 0;
-    const locations: MetricLocation[] = [];
+		let totalLength = 0;
+		let maxLength = 0;
+		const locations: MetricLocation[] = [];
 
-    for (const func of functions) {
-      totalLength += func.lineCount;
-      if (func.lineCount > maxLength) {
-        maxLength = func.lineCount;
-      }
-      if (func.lineCount > thresholds.good) {
-        locations.push({
-          filePath,
-          line: func.startLine,
-          functionName: func.name,
-          message: `${func.lineCount} ${t('size')}`,
-        });
-      }
-    }
+		for (const func of functions) {
+			totalLength += func.lineCount;
+			if (func.lineCount > maxLength) {
+				maxLength = func.lineCount;
+			}
+			if (func.lineCount > thresholds.good) {
+				locations.push({
+					filePath,
+					line: func.startLine,
+					functionName: func.name,
+					message: `${func.lineCount} ${t('size')}`,
+				});
+			}
+		}
 
-    const avgLength = totalLength / functions.length;
+		const avgLength = totalLength / functions.length;
 
-    // Industry standard (SonarQube): weighted scoring considering both average and worst-case
-    let avgScore: number;
-    if (avgLength <= thresholds.excellent) {
-      avgScore = 100;
-    } else if (avgLength <= thresholds.good) {
-      avgScore =
-        100 - ((avgLength - thresholds.excellent) / (thresholds.good - thresholds.excellent)) * 15;
-    } else if (avgLength <= thresholds.acceptable) {
-      avgScore =
-        85 - ((avgLength - thresholds.good) / (thresholds.acceptable - thresholds.good)) * 35;
-    } else if (avgLength <= thresholds.poor) {
-      avgScore =
-        50 - ((avgLength - thresholds.acceptable) / (thresholds.poor - thresholds.acceptable)) * 35;
-    } else {
-      avgScore = Math.max(0, 15 * Math.exp(-(avgLength - thresholds.poor) / 50));
-    }
+		// Industry standard (SonarQube): weighted scoring considering both average and worst-case
+		let avgScore: number;
+		if (avgLength <= thresholds.excellent) {
+			avgScore = 100;
+		} else if (avgLength <= thresholds.good) {
+			avgScore =
+				100 -
+				((avgLength - thresholds.excellent) / (thresholds.good - thresholds.excellent)) *
+					15;
+		} else if (avgLength <= thresholds.acceptable) {
+			avgScore =
+				85 -
+				((avgLength - thresholds.good) / (thresholds.acceptable - thresholds.good)) * 35;
+		} else if (avgLength <= thresholds.poor) {
+			avgScore =
+				50 -
+				((avgLength - thresholds.acceptable) / (thresholds.poor - thresholds.acceptable)) *
+					35;
+		} else {
+			avgScore = Math.max(0, 15 * Math.exp(-(avgLength - thresholds.poor) / 50));
+		}
 
-    let maxScore: number;
-    if (maxLength <= thresholds.excellent) {
-      maxScore = 100;
-    } else if (maxLength <= thresholds.good) {
-      maxScore =
-        100 - ((maxLength - thresholds.excellent) / (thresholds.good - thresholds.excellent)) * 15;
-    } else if (maxLength <= thresholds.acceptable) {
-      maxScore =
-        85 - ((maxLength - thresholds.good) / (thresholds.acceptable - thresholds.good)) * 35;
-    } else if (maxLength <= thresholds.poor) {
-      maxScore =
-        50 - ((maxLength - thresholds.acceptable) / (thresholds.poor - thresholds.acceptable)) * 35;
-    } else {
-      maxScore = Math.max(0, 15 * Math.exp(-(maxLength - thresholds.poor) / 50));
-    }
+		let maxScore: number;
+		if (maxLength <= thresholds.excellent) {
+			maxScore = 100;
+		} else if (maxLength <= thresholds.good) {
+			maxScore =
+				100 -
+				((maxLength - thresholds.excellent) / (thresholds.good - thresholds.excellent)) *
+					15;
+		} else if (maxLength <= thresholds.acceptable) {
+			maxScore =
+				85 -
+				((maxLength - thresholds.good) / (thresholds.acceptable - thresholds.good)) * 35;
+		} else if (maxLength <= thresholds.poor) {
+			maxScore =
+				50 -
+				((maxLength - thresholds.acceptable) / (thresholds.poor - thresholds.acceptable)) *
+					35;
+		} else {
+			maxScore = Math.max(0, 15 * Math.exp(-(maxLength - thresholds.poor) / 50));
+		}
 
-    const normalizedScore = avgScore * 0.5 + maxScore * 0.5;
+		const normalizedScore = avgScore * 0.5 + maxScore * 0.5;
 
-    let severity: Severity;
-    if (maxLength <= thresholds.good) {
-      severity = 'info';
-    } else if (maxLength <= thresholds.acceptable) {
-      severity = 'warning';
-    } else if (maxLength <= thresholds.poor) {
-      severity = 'error';
-    } else {
-      severity = 'critical';
-    }
+		let severity: Severity;
+		if (maxLength <= thresholds.good) {
+			severity = 'info';
+		} else if (maxLength <= thresholds.acceptable) {
+			severity = 'warning';
+		} else if (maxLength <= thresholds.poor) {
+			severity = 'error';
+		} else {
+			severity = 'critical';
+		}
 
-    return {
-      name: this.name,
-      category: this.category,
-      value: avgLength,
-      normalizedScore: Math.round(normalizedScore * 10) / 10,
-      severity,
-      details: t('detail_avg_lines_max_lines', {
-        avg: avgLength.toFixed(1),
-        max: String(maxLength),
-      }),
-      locations: locations.length > 0 ? locations : undefined,
-    };
-  }
+		return {
+			name: this.name,
+			category: this.category,
+			value: avgLength,
+			normalizedScore: Math.round(normalizedScore * 10) / 10,
+			severity,
+			details: t('detail_avg_lines_max_lines', {
+				avg: avgLength.toFixed(1),
+				max: String(maxLength),
+			}),
+			locations: locations.length > 0 ? locations : undefined,
+		};
+	}
 }

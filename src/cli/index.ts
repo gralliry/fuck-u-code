@@ -17,15 +17,15 @@ import { VERSION } from '../version.js';
 const VALID_LOCALES = ['en', 'zh'];
 
 export function createCLI(): Command {
-  const program = new Command();
+	const program = new Command();
 
-  program
-    .name('fuck-u-code')
-    .description(t('cli_description'))
-    .version(VERSION)
-    .addHelpText(
-      'after',
-      `
+	program
+		.name('fuck-u-code')
+		.description(t('cli_description'))
+		.version(VERSION)
+		.addHelpText(
+			'after',
+			`
 ${t('cli_examples')}
   $ fuck-u-code analyze .                    # ${t('cli_example_analyze_cwd')}
   $ fuck-u-code analyze ./src --top 10       # ${t('cli_example_analyze_top')}
@@ -39,51 +39,51 @@ ${t('cli_examples')}
 ${t('cli_supported_languages')}
   ${getSupportedLanguageNames()}
 `
-    );
+		);
 
-  program.addCommand(createAnalyzeCommand());
-  program.addCommand(createAIReviewCommand());
-  program.addCommand(createConfigCommand());
-  program.addCommand(createUpdateCommand());
-  program.addCommand(createUninstallCommand());
-  program.addCommand(createCloneAnalyzeCommand());
+	program.addCommand(createAnalyzeCommand());
+	program.addCommand(createAIReviewCommand());
+	program.addCommand(createConfigCommand());
+	program.addCommand(createUpdateCommand());
+	program.addCommand(createUninstallCommand());
+	program.addCommand(createCloneAnalyzeCommand());
 
-  return program;
+	return program;
 }
 
 export async function runCLI(args: string[] = process.argv): Promise<void> {
-  // Priority: --locale (argv) > config i18n.locale > default 'en'
-  let locale: Locale | undefined;
+	// Priority: --locale (argv) > config i18n.locale > default 'en'
+	let locale: Locale | undefined;
 
-  for (let i = 0; i < args.length; i++) {
-    const arg = args[i];
-    if (!arg) continue;
+	for (let i = 0; i < args.length; i++) {
+		const arg = args[i];
+		if (!arg) continue;
 
-    if (arg.startsWith('--locale=')) {
-      const value = arg.slice('--locale='.length);
-      if (VALID_LOCALES.includes(value)) {
-        locale = value as Locale;
-        break;
-      }
-    }
+		if (arg.startsWith('--locale=')) {
+			const value = arg.slice('--locale='.length);
+			if (VALID_LOCALES.includes(value)) {
+				locale = value as Locale;
+				break;
+			}
+		}
 
-    if (arg === '--locale' || arg === '-l') {
-      const next = args[i + 1];
-      if (next && VALID_LOCALES.includes(next)) {
-        locale = next as Locale;
-        break;
-      }
-    }
-  }
+		if (arg === '--locale' || arg === '-l') {
+			const next = args[i + 1];
+			if (next && VALID_LOCALES.includes(next)) {
+				locale = next as Locale;
+				break;
+			}
+		}
+	}
 
-  if (!locale) {
-    locale = await loadLocaleFromConfig();
-  }
+	if (!locale) {
+		locale = await loadLocaleFromConfig();
+	}
 
-  if (locale) {
-    setLocale(locale);
-  }
+	if (locale) {
+		setLocale(locale);
+	}
 
-  const program = createCLI();
-  await program.parseAsync(args);
+	const program = createCLI();
+	await program.parseAsync(args);
 }

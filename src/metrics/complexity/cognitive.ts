@@ -17,111 +17,122 @@ import { t } from '../../i18n/index.js';
 import { getThresholds } from '../thresholds/language-thresholds.js';
 
 export class CognitiveComplexityMetric implements Metric {
-  readonly name = 'cognitive_complexity';
-  readonly category: MetricCategory = 'complexity';
-  readonly weight: number;
-  private readonly language: Language;
+	readonly name = 'cognitive_complexity';
+	readonly category: MetricCategory = 'complexity';
+	readonly weight: number;
+	private readonly language: Language;
 
-  constructor(weight: number, language: Language) {
-    this.weight = weight;
-    this.language = language;
-  }
+	constructor(weight: number, language: Language) {
+		this.weight = weight;
+		this.language = language;
+	}
 
-  calculate(parseResult: ParseResult): MetricResult {
-    const { functions, filePath } = parseResult;
-    const thresholds = getThresholds(this.language, 'cognitiveComplexity');
+	calculate(parseResult: ParseResult): MetricResult {
+		const { functions, filePath } = parseResult;
+		const thresholds = getThresholds(this.language, 'cognitiveComplexity');
 
-    if (functions.length === 0) {
-      return {
-        name: this.name,
-        category: this.category,
-        value: 0,
-        normalizedScore: 100,
-        severity: 'info',
-        details: t('detail_no_functions'),
-      };
-    }
+		if (functions.length === 0) {
+			return {
+				name: this.name,
+				category: this.category,
+				value: 0,
+				normalizedScore: 100,
+				severity: 'info',
+				details: t('detail_no_functions'),
+			};
+		}
 
-    let totalCognitive = 0;
-    let maxCognitive = 0;
-    const locations: MetricLocation[] = [];
+		let totalCognitive = 0;
+		let maxCognitive = 0;
+		const locations: MetricLocation[] = [];
 
-    for (const func of functions) {
-      const cognitive = func.complexity + func.nestingDepth * 2;
-      totalCognitive += cognitive;
-      if (cognitive > maxCognitive) {
-        maxCognitive = cognitive;
-      }
-      if (cognitive > thresholds.good) {
-        locations.push({
-          filePath,
-          line: func.startLine,
-          functionName: func.name,
-          message: `${t('metric_cognitive_complexity')}: ${cognitive}`,
-        });
-      }
-    }
+		for (const func of functions) {
+			const cognitive = func.complexity + func.nestingDepth * 2;
+			totalCognitive += cognitive;
+			if (cognitive > maxCognitive) {
+				maxCognitive = cognitive;
+			}
+			if (cognitive > thresholds.good) {
+				locations.push({
+					filePath,
+					line: func.startLine,
+					functionName: func.name,
+					message: `${t('metric_cognitive_complexity')}: ${cognitive}`,
+				});
+			}
+		}
 
-    const avgCognitive = totalCognitive / functions.length;
+		const avgCognitive = totalCognitive / functions.length;
 
-    // weighted scoring considering both average and worst-case
-    let avgScore: number;
-    if (avgCognitive <= thresholds.excellent) {
-      avgScore = 100;
-    } else if (avgCognitive <= thresholds.good) {
-      avgScore =
-        100 -
-        ((avgCognitive - thresholds.excellent) / (thresholds.good - thresholds.excellent)) * 20;
-    } else if (avgCognitive <= thresholds.acceptable) {
-      avgScore =
-        80 - ((avgCognitive - thresholds.good) / (thresholds.acceptable - thresholds.good)) * 35;
-    } else if (avgCognitive <= thresholds.poor) {
-      avgScore =
-        45 -
-        ((avgCognitive - thresholds.acceptable) / (thresholds.poor - thresholds.acceptable)) * 30;
-    } else {
-      avgScore = Math.max(0, 15 * Math.exp(-(avgCognitive - thresholds.poor) / 15));
-    }
+		// weighted scoring considering both average and worst-case
+		let avgScore: number;
+		if (avgCognitive <= thresholds.excellent) {
+			avgScore = 100;
+		} else if (avgCognitive <= thresholds.good) {
+			avgScore =
+				100 -
+				((avgCognitive - thresholds.excellent) / (thresholds.good - thresholds.excellent)) *
+					20;
+		} else if (avgCognitive <= thresholds.acceptable) {
+			avgScore =
+				80 -
+				((avgCognitive - thresholds.good) / (thresholds.acceptable - thresholds.good)) * 35;
+		} else if (avgCognitive <= thresholds.poor) {
+			avgScore =
+				45 -
+				((avgCognitive - thresholds.acceptable) /
+					(thresholds.poor - thresholds.acceptable)) *
+					30;
+		} else {
+			avgScore = Math.max(0, 15 * Math.exp(-(avgCognitive - thresholds.poor) / 15));
+		}
 
-    let maxScore: number;
-    if (maxCognitive <= thresholds.excellent) {
-      maxScore = 100;
-    } else if (maxCognitive <= thresholds.good) {
-      maxScore =
-        100 -
-        ((maxCognitive - thresholds.excellent) / (thresholds.good - thresholds.excellent)) * 20;
-    } else if (maxCognitive <= thresholds.acceptable) {
-      maxScore =
-        80 - ((maxCognitive - thresholds.good) / (thresholds.acceptable - thresholds.good)) * 35;
-    } else if (maxCognitive <= thresholds.poor) {
-      maxScore =
-        45 -
-        ((maxCognitive - thresholds.acceptable) / (thresholds.poor - thresholds.acceptable)) * 30;
-    } else {
-      maxScore = Math.max(0, 15 * Math.exp(-(maxCognitive - thresholds.poor) / 15));
-    }
+		let maxScore: number;
+		if (maxCognitive <= thresholds.excellent) {
+			maxScore = 100;
+		} else if (maxCognitive <= thresholds.good) {
+			maxScore =
+				100 -
+				((maxCognitive - thresholds.excellent) / (thresholds.good - thresholds.excellent)) *
+					20;
+		} else if (maxCognitive <= thresholds.acceptable) {
+			maxScore =
+				80 -
+				((maxCognitive - thresholds.good) / (thresholds.acceptable - thresholds.good)) * 35;
+		} else if (maxCognitive <= thresholds.poor) {
+			maxScore =
+				45 -
+				((maxCognitive - thresholds.acceptable) /
+					(thresholds.poor - thresholds.acceptable)) *
+					30;
+		} else {
+			maxScore = Math.max(0, 15 * Math.exp(-(maxCognitive - thresholds.poor) / 15));
+		}
 
-    const normalizedScore = avgScore * 0.5 + maxScore * 0.5;
+		const normalizedScore = avgScore * 0.5 + maxScore * 0.5;
 
-    let severity: Severity;
-    if (maxCognitive <= thresholds.good) {
-      severity = 'info';
-    } else if (maxCognitive <= thresholds.acceptable) {
-      severity = 'warning';
-    } else if (maxCognitive <= thresholds.poor) {
-      severity = 'error';
-    } else {
-      severity = 'critical';
-    }
+		let severity: Severity;
+		if (maxCognitive <= thresholds.good) {
+			severity = 'info';
+		} else if (maxCognitive <= thresholds.acceptable) {
+			severity = 'warning';
+		} else if (maxCognitive <= thresholds.poor) {
+			severity = 'error';
+		} else {
+			severity = 'critical';
+		}
 
-    return {
-      name: this.name,
-      category: this.category,
-      value: avgCognitive,
-      normalizedScore: Math.round(normalizedScore * 10) / 10,
-      severity,
-      details: t('detail_avg_max', { avg: avgCognitive.toFixed(1), max: String(maxCognitive) }),
-      locations: locations.length > 0 ? locations : undefined,
-    };
-  }
+		return {
+			name: this.name,
+			category: this.category,
+			value: avgCognitive,
+			normalizedScore: Math.round(normalizedScore * 10) / 10,
+			severity,
+			details: t('detail_avg_max', {
+				avg: avgCognitive.toFixed(1),
+				max: String(maxCognitive),
+			}),
+			locations: locations.length > 0 ? locations : undefined,
+		};
+	}
 }
