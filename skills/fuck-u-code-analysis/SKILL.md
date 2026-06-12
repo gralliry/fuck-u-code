@@ -10,11 +10,11 @@ description: Use when code changes are complete and ready for quality review, be
 Build from source:
 
 ```bash
-git clone https://github.com/gralliry/fuck-u-code.git
+git clone https://github.com/fuck-u-code/fuck-u-code.git
 cd fuck-u-code && npm install && npm run build
 ```
 
-Or download the pre-built binary from the [Releases](https://github.com/gralliry/fuck-u-code/releases) page.
+Or download the pre-built binary from the Releases page.
 
 Requires Node.js >= 18.0.0.
 

@@ -309,7 +309,7 @@ export class MarkdownOutput {
     lines.push('---');
     lines.push('');
     lines.push(
-      `*${t('output_generated_by', { tool: '[fuck-u-code](https://github.com/Done-0/fuck-u-code)' })}*`
+      `*${t('output_generated_by', { tool: 'fuck-u-code' })}*`
     );
 
     return lines.join('\n');

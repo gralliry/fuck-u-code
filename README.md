@@ -23,9 +23,10 @@ A tool designed to **expose shitty code quality** with sharp but humorous feedba
 
 ## Differences from the Original Library
 
-This fork is based on the original [`fuck-u-code`](https://github.com/Done-0/fuck-u-code) by **Done-0**, with a focus on **simplification and bug fixes**:
+This fork is based on the original `fuck-u-code`, with a focus on **simplification and bug fixes**:
 
-| Aspect | Original (Done-0) | This Fork (gralliry) |
+| Aspect | Original | This Fork |
+| ------ | -------- | ---------- |
 | ------ | ----------------- | --------------------- |
 | **AI Providers** | 5 providers (OpenAI, Anthropic, DeepSeek, Gemini, Ollama) | **2 formats** (openai + anthropic). DeepSeek/Ollama still usable via custom `--base-url` |
 | **AI Config** | Mixed: env vars (`OPENAI_API_KEY`, `DEEPSEEK_API_KEY`, etc.) + config file + CLI | **Unified**: config file + CLI only, no env var auto-detection — simpler and more predictable |
@@ -39,11 +40,11 @@ This fork is based on the original [`fuck-u-code`](https://github.com/Done-0/fuc
 Build from source:
 
 ```bash
-git clone https://github.com/gralliry/fuck-u-code.git
+git clone https://github.com/fuck-u-code/fuck-u-code.git
 cd fuck-u-code && npm install && npm run build
 ```
 
-Or download the pre-built binary from the [Releases](https://github.com/gralliry/fuck-u-code/releases) page.
+Or download the pre-built binary from the Releases page.
 
 ## Usage
 
@@ -82,6 +83,7 @@ fuck-u-code ai-review . -p anthropic -m claude-sonnet-4-5-20250929   # Anthropic
 fuck-u-code ai-review . -m gpt-4o -t 3                               # Review top 3 worst
 fuck-u-code ai-review . -m gpt-4o -f markdown -o review.md           # Export Markdown
 fuck-u-code ai-review . -b https://api.deepseek.com/v1 -k sk-xxx -m deepseek-chat  # DeepSeek via OpenAI format
+fuck-u-code ai-review . --timeout 300 -m gpt-4o                       # Custom timeout for thinking models
 ```
 
 | Option              | Short | Description                         |
@@ -90,6 +92,7 @@ fuck-u-code ai-review . -b https://api.deepseek.com/v1 -k sk-xxx -m deepseek-cha
 | `--provider <name>` | `-p`  | Format: openai / anthropic          |
 | `--base-url <url>`  | `-b`  | Custom API endpoint                 |
 | `--api-key <key>`   | `-k`  | API key
+| `--timeout <sec>`   |        | Request timeout in seconds (default: 120). Increase for thinking models
 | `--top <n>`         | `-t`  | Review top N worst files (default 5)              |
 | `--format <fmt>`    | `-f`  | Format: console/markdown/html                     |
 | `--output <file>`   | `-o`  | Write to file                                     |
@@ -145,7 +148,9 @@ Full example (`.fuckucoderc.json`):
     "provider": "openai",
     "model": "gpt-4o",
     "baseUrl": "https://api.openai.com/v1",
-    "apiKey": "sk-your-api-key"
+    "apiKey": "sk-your-api-key",
+    "timeout": 300,
+    "maxRetries": 2
   },
   "i18n": {
     "locale": "en"
@@ -215,4 +220,4 @@ The tool reads `.gitignore` files (including nested ones) and follows standard g
 
 ---
 
-MIT License · Fork of [Done-0/fuck-u-code](https://github.com/Done-0/fuck-u-code) · ⭐ Star the original!
+MIT License · ⭐ Star on GitHub

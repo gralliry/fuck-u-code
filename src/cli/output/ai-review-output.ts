@@ -45,7 +45,7 @@ export function renderAIReviewMarkdown(reviews: AIReviewData[]): string {
   }
 
   lines.push(
-    `> ${t('output_generated_by', { tool: '[fuck-u-code](https://github.com/Done-0/fuck-u-code)' })}`
+    `> ${t('output_generated_by', { tool: 'fuck-u-code' })}`
   );
 
   return lines.join('\n');
@@ -110,7 +110,7 @@ export function renderAIReviewHtml(reviews: AIReviewData[]): string {
     <h1>🌸 ${escapeHtml(title)} 🌸</h1>
 ${fileCards}
     <div class="footer">
-      ${t('output_generated_by', { tool: '<a href="https://github.com/Done-0/fuck-u-code" style="color: #58a6ff;">fuck-u-code</a>' })}
+      ${t('output_generated_by', { tool: '<a href="https://github.com/fuck-u-code/fuck-u-code" style="color: #58a6ff;">fuck-u-code</a>' })}
     </div>
   </div>
 </body>

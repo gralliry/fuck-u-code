@@ -1,6 +1,6 @@
 # fuck-u-code Skills
 
-AI agent skills for [fuck-u-code](https://github.com/gralliry/fuck-u-code) — the code quality analyzer that exposes shitty code with sharp feedback.
+AI agent skills for fuck-u-code — the code quality analyzer that exposes shitty code with sharp feedback.
 
 ## Skills
 
@@ -50,5 +50,5 @@ cp -r skills/fuck-u-code-analysis ~/.claude/skills/
 
 ## Requirements
 
-- [fuck-u-code](https://github.com/gralliry/fuck-u-code) built from source or downloaded from [Releases](https://github.com/gralliry/fuck-u-code/releases)
+- fuck-u-code built from source or downloaded from Releases
 - Node.js >= 18.0.0

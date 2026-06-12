@@ -148,7 +148,7 @@ ${verbose ? this.renderWorstFunctionsSection(result) : ''}
     </div>
 
     <div class="footer">
-      ${t('output_generated_by', { tool: '<a href="https://github.com/Done-0/fuck-u-code" style="color: #58a6ff;">fuck-u-code</a>' })}
+      ${t('output_generated_by', { tool: '<a href="https://github.com/fuck-u-code/fuck-u-code" style="color: #58a6ff;">fuck-u-code</a>' })}
     </div>
   </div>
 </body>
