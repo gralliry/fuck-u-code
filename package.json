@@ -1,9 +1,12 @@
 {
   "name": "eff-u-code",
-  "version": "2.2.2",
+  "version": "1.0.1",
   "description": "Production-grade code quality analyzer with AST parsing and AI integration",
   "type": "module",
   "main": "dist/index.js",
+  "imports": {
+    "#/*": "./dist/*"
+  },
   "bin": {
     "fuck-u-code": "bin/fuck-u-code.js",
     "fuck-u-code-mcp": "bin/fuck-u-code-mcp.js"
@@ -31,11 +34,11 @@
     "complexity",
     "metrics"
   ],
-  "author": "Done-0",
+  "author": "",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/Done-0/fuck-u-code.git"
+    "url": "git+https://github.com/fuck-u-code/fuck-u-code.git"
   },
   "engines": {
     "node": ">=18.0.0"

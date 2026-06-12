@@ -7,17 +7,14 @@ description: Use when code changes are complete and ready for quality review, be
 
 ## Prerequisites
 
-Install fuck-u-code globally before using this skill:
+Build from source:
 
 ```bash
-npm install -g eff-u-code
+git clone https://github.com/fuck-u-code/fuck-u-code.git
+cd fuck-u-code && npm install && npm run build
 ```
 
-Verify installation:
-
-```bash
-fuck-u-code --version
-```
+Or download the pre-built binary from the Releases page.
 
 Requires Node.js >= 18.0.0.
 

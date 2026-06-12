@@ -24,6 +24,7 @@ interface AIReviewOptions {
   model?: string;
   baseUrl?: string;
   apiKey?: string;
+  timeout?: number;
   verbose?: boolean;
   locale?: 'en' | 'zh';
   top?: number;
@@ -41,6 +42,7 @@ export function createAIReviewCommand(): Command {
     .option('-m, --model <model>', 'Model to use (overrides config file)')
     .option('-b, --base-url <url>', 'Custom API base URL (for OpenAI-compatible APIs)')
     .option('-k, --api-key <key>', 'API key (overrides config file)')
+    .option('--timeout <seconds>', 'Request timeout in seconds (default: 120)', parseInt)
     .option('-t, --top <number>', 'Number of worst files to review (default: 5)', parseInt)
     .option('-v, --verbose', 'Show verbose output')
     .option('-l, --locale <locale>', 'Language: en, zh')
@@ -110,7 +112,10 @@ async function runAIReview(projectPath: string, options: AIReviewOptions): Promi
               maxTokens: existingInstance?.maxTokens ?? 4096,
               temperature: existingInstance?.temperature ?? 0.7,
               topP: existingInstance?.topP ?? 1,
-              timeout: existingInstance?.timeout ?? 60,
+              timeout:
+                options.timeout ??
+                existingInstance?.timeout ??
+                120,
               maxRetries: existingInstance?.maxRetries ?? 3,
             },
           ],

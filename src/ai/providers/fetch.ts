@@ -5,8 +5,9 @@
 import type { ProviderContext } from '../types.js';
 
 /**
- * Fetch with retry, timeout, and exponential backoff
- * Reads error response body for detailed error messages
+ * Fetch with retry, timeout, and exponential backoff.
+ * Errors are enriched with URL and attempt info so "fetch failed"
+ * messages always carry the API endpoint and retry count.
  */
 export async function fetchWithRetry(
   ctx: Pick<ProviderContext, 'timeout' | 'maxRetries'>,
@@ -16,16 +17,14 @@ export async function fetchWithRetry(
   let lastError: Error | null = null;
 
   for (let attempt = 0; attempt <= ctx.maxRetries; attempt++) {
-    try {
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), ctx.timeout * 1000);
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), ctx.timeout * 1000);
 
+    try {
       const response = await fetch(url, {
         ...options,
         signal: controller.signal,
       });
-
-      clearTimeout(timeoutId);
 
       if (response.ok) {
         return response;
@@ -41,17 +40,39 @@ export async function fetchWithRetry(
         errorDetail = response.statusText;
       }
 
-      lastError = new Error(`HTTP ${response.status}: ${errorDetail}`);
+      lastError = new Error(
+        `[${url}] HTTP ${response.status}: ${errorDetail} (attempt ${attempt + 1}/${ctx.maxRetries + 1})`
+      );
 
       // Don't retry on client errors (4xx) except 429 (rate limit)
       if (response.status >= 400 && response.status < 500 && response.status !== 429) {
         throw lastError;
       }
     } catch (error) {
-      if (error instanceof Error && error.message.startsWith('HTTP 4')) {
+      // Preserve the structured HTTP error thrown above
+      if (error instanceof Error && error.message.startsWith(`[${url}] HTTP 4`)) {
         throw error;
       }
-      lastError = error as Error;
+
+      const cause = error instanceof Error ? error.message : String(error);
+
+      // Don't retry on DNS / resolution / TLS errors
+      if (
+        cause.includes('ENOTFOUND') ||
+        cause.includes('ENODATA') ||
+        cause.includes('ECONNREFUSED') ||
+        cause.includes('EPROTO') ||
+        cause.includes('CERT_') ||
+        cause.includes('ERR_TLS') ||
+        cause.includes('UNABLE_TO_VERIFY_LEAF_SIGNATURE') ||
+        cause.includes('DEPTH_ZERO_SELF_SIGNED_CERT')
+      ) {
+        throw new Error(`[${url}] ${cause}`);
+      }
+
+      lastError = new Error(`[${url}] ${cause} (attempt ${attempt + 1}/${ctx.maxRetries + 1})`);
+    } finally {
+      clearTimeout(timeoutId);
     }
 
     if (attempt < ctx.maxRetries) {
@@ -59,5 +80,5 @@ export async function fetchWithRetry(
     }
   }
 
-  throw lastError ?? new Error('Request failed');
+  throw lastError ?? new Error(`[${url}] Request failed`);
 }

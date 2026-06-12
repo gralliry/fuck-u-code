@@ -45,6 +45,8 @@ export const configSchema = z.object({
       model: z.string().optional(),
       baseUrl: z.string().optional(),
       apiKey: z.string().optional(),
+      timeout: z.number().min(1).max(600).optional(),
+      maxRetries: z.number().min(0).max(10).optional(),
     })
     .optional()
     .default({}),

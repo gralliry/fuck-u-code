@@ -6,9 +6,9 @@ import { Command } from 'commander';
 import { resolve, join } from 'node:path';
 import { homedir } from 'node:os';
 import { readFile, writeFile } from 'node:fs/promises';
-import { loadConfig, DEFAULT_CONFIG } from '../../config/index.js';
-import { exists } from '../../utils/fs.js';
-import { t } from '../../i18n/index.js';
+import { loadConfig, DEFAULT_CONFIG } from '#/config/index.js';
+import { exists } from '#/utils/fs.js';
+import { t } from '#/i18n/index.js';
 import chalk from 'chalk';
 
 /** Supported dot-notation keys for `config set` */
@@ -43,6 +43,22 @@ const SETTABLE_KEYS: Record<string, (config: Record<string, unknown>, value: str
     ensureObject(config, 'ai');
     (config.ai as Record<string, unknown>).baseUrl = value;
   },
+  'ai.timeout': (config, value) => {
+    const n = parseInt(value, 10);
+    if (isNaN(n) || n < 1 || n > 600) {
+      throw new Error(`Invalid timeout: ${value}. Must be a number between 1 and 600.`);
+    }
+    ensureObject(config, 'ai');
+    (config.ai as Record<string, unknown>).timeout = n;
+  },
+  'ai.maxRetries': (config, value) => {
+    const n = parseInt(value, 10);
+    if (isNaN(n) || n < 0 || n > 10) {
+      throw new Error(`Invalid maxRetries: ${value}. Must be a number between 0 and 10.`);
+    }
+    ensureObject(config, 'ai');
+    (config.ai as Record<string, unknown>).maxRetries = n;
+  },
 };
 
 function ensureObject(obj: Record<string, unknown>, key: string): void {
@@ -51,11 +67,23 @@ function ensureObject(obj: Record<string, unknown>, key: string): void {
   }
 }
 
+const CONFIG_SEARCH_PLACES = [
+  '.fuckucoderc.json',
+  '.fuckucoderc.yaml',
+  '.fuckucoderc.yml',
+  '.fuckucoderc.js',
+  '.fuckucoderc.cjs',
+  'fuckucode.config.js',
+  'fuckucode.config.cjs',
+  'fuckucode.config.mjs',
+];
+
 export function createConfigCommand(): Command {
   const command = new Command('config');
 
   command
     .description(t('cmd_config_description'))
+    .option('-g, --global', 'Use global config (~/.fuckucoderc.json) instead of local')
     .argument('[action]', 'Action: show, init, set', 'show')
     .argument('[args...]', 'Arguments for the action')
     .addHelpText(
@@ -70,9 +98,10 @@ ${t('cli_examples')}
   $ fuck-u-code config set ai.baseUrl https://...    # ${t('cmd_config_example_set_base_url')}
   $ fuck-u-code config set ai.model gpt-4o           # ${t('cmd_config_example_set_model')}
   $ fuck-u-code config set ai.provider openai        # ${t('cmd_config_example_set_provider')}
+  $ fuck-u-code config set -g ai.timeout 300         # ${t('cmd_config_example_set_global')}
 `
     )
-    .action(async (action: string, args: string[]) => {
+    .action(async (action: string, args: string[], options: { global?: boolean }) => {
       switch (action) {
         case 'show': {
           const projectPath = resolve(args[0] ?? '.');
@@ -95,7 +124,7 @@ ${t('cli_examples')}
             console.error(chalk.red(t('config_set_value_required')));
             process.exit(1);
           }
-          await setConfig(key, value);
+          await setConfig(key, value, options.global ?? false);
           break;
         }
         default:
@@ -126,10 +155,26 @@ async function initConfig(projectPath: string): Promise<void> {
 }
 
 /**
- * Set a config value in the global config file (~/.fuckucoderc.json).
- * Creates the file if it doesn't exist.
+ * Find an existing config file in the given directory (non-recursive).
+ * Returns its path, or null if no config file is found.
  */
-async function setConfig(key: string, value: string): Promise<void> {
+async function findLocalConfigFile(dir: string): Promise<string | null> {
+  for (const name of CONFIG_SEARCH_PLACES) {
+    const p = join(dir, name);
+    if (await exists(p)) {
+      return p;
+    }
+  }
+  return null;
+}
+
+/**
+ * Set a config value.
+ * - If `--global` is set: always writes to ~/.fuckucoderc.json.
+ * - Otherwise: if a local config file exists in cwd, writes to it;
+ *   falls back to ~/.fuckucoderc.json.
+ */
+async function setConfig(key: string, value: string, useGlobal: boolean): Promise<void> {
   const setter = SETTABLE_KEYS[key];
   if (!setter) {
     console.error(chalk.red(t('config_set_invalid_key', { key })));
@@ -137,7 +182,16 @@ async function setConfig(key: string, value: string): Promise<void> {
     process.exit(1);
   }
 
-  const configPath = join(homedir(), '.fuckucoderc.json');
+  const globalPath = join(homedir(), '.fuckucoderc.json');
+  let configPath: string;
+
+  if (useGlobal) {
+    configPath = globalPath;
+  } else {
+    const localPath = await findLocalConfigFile(process.cwd());
+    configPath = localPath ?? globalPath;
+  }
+
   let config: Record<string, unknown> = {};
 
   if (await exists(configPath)) {
@@ -158,5 +212,6 @@ async function setConfig(key: string, value: string): Promise<void> {
   }
 
   await writeFile(configPath, JSON.stringify(config, null, 2) + '\n', 'utf-8');
-  console.log(chalk.green(t('config_set_success', { key, value })));
+  const where = configPath === globalPath ? t('config_set_global') : t('config_set_local');
+  console.log(chalk.green(`${t('config_set_success', { key, value })} (${where})`));
 }

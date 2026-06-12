@@ -27,35 +27,44 @@ const CONFIG_SEARCH_PLACES = [
 
 /**
  * Load configuration file
- * Search order: project path upward -> global ~/.fuckucoderc.json
+ * Merge order: DEFAULT_CONFIG -> global ~/.fuckucoderc.json -> project local config
+ * Local fields override global, missing fields inherit from global.
  */
 export async function loadConfig(projectPath: string): Promise<Config> {
   const explorer = cosmiconfig(MODULE_NAME, { searchPlaces: CONFIG_SEARCH_PLACES });
 
-  try {
-    // Search from project path upward
-    const result = await explorer.search(projectPath);
-    if (result?.config) {
-      const parsed = configSchema.safeParse(result.config);
-      if (parsed.success) {
-        return mergeConfig(DEFAULT_CONFIG, parsed.data);
-      }
-      logger.warn(t('warn_config_validation_failed', { error: parsed.error.message }));
-    }
+  // Start from defaults
+  let config: Config = DEFAULT_CONFIG;
 
-    // Fall back to global config in home directory
+  try {
+    // Layer 1: global config in home directory
     const globalResult = await explorer.search(homedir());
     if (globalResult?.config) {
       const parsed = configSchema.safeParse(globalResult.config);
       if (parsed.success) {
-        return mergeConfig(DEFAULT_CONFIG, parsed.data);
+        config = mergeConfig(config, parsed.data);
       }
     }
   } catch (error) {
     logger.warn(t('warn_config_load_failed', { error: String(error) }));
   }
 
-  return DEFAULT_CONFIG;
+  try {
+    // Layer 2: project local config (overrides global)
+    const result = await explorer.search(projectPath);
+    if (result?.config) {
+      const parsed = configSchema.safeParse(result.config);
+      if (parsed.success) {
+        config = mergeConfig(config, parsed.data);
+      } else {
+        logger.warn(t('warn_config_validation_failed', { error: parsed.error.message }));
+      }
+    }
+  } catch (error) {
+    logger.warn(t('warn_config_load_failed', { error: String(error) }));
+  }
+
+  return config;
 }
 
 /**
@@ -117,8 +126,8 @@ export function loadAIConfig(configAI?: Config['ai'], cliModel?: string): AIConf
         maxTokens: 4096,
         temperature: 0.7,
         topP: 1,
-        timeout: 60,
-        maxRetries: 3,
+        timeout: configAI.timeout ?? 120,
+        maxRetries: configAI.maxRetries ?? 3,
       },
     ],
   };
