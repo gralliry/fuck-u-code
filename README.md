@@ -102,17 +102,29 @@ fuck-u-code ai-review . --timeout 300 -m gpt-4o                       # Custom t
 ### Config Management
 
 ```bash
-fuck-u-code config init                    # Generate .fuckucoderc.json
-fuck-u-code config show                    # Show current config
-fuck-u-code config set i18n.locale zh      # Set default language
-fuck-u-code config set ai.provider openai  # Set AI provider
-fuck-u-code config set ai.model gpt-4o     # Set AI model
-fuck-u-code config set ai.apiKey sk-xxx    # Set API key
+fuck-u-code config init                         # Generate .fuckucoderc.json
+fuck-u-code config show                         # Show current config
+fuck-u-code config set i18n.locale zh           # Set default language
+fuck-u-code config set ai.provider openai       # Set AI provider
+fuck-u-code config set ai.model gpt-4o          # Set AI model
+fuck-u-code config set ai.apiKey sk-xxx         # Set API key
+fuck-u-code config set ai.timeout 300           # Set request timeout (seconds)
+fuck-u-code config set ai.maxRetries 2          # Set max retry count
+fuck-u-code config set -g ai.apiKey sk-xxx      # Force write to global config
 ```
 
-## Configuration File
+| Option            | Short | Description                                |
+| ----------------- | ----- | ------------------------------------------ |
+| `-g, --global`    |       | Write to global config (`~/.fuckucoderc.json`) instead of local |
 
-Auto-discovered from project directory upward, then falls back to global `~/.fuckucoderc.json`.
+**Behavior:** `config set` without `-g` looks for a config file in the current directory
+(`.fuckucoderc.json` / `.yaml` / `.js` / `fuckucode.config.js`). If found, writes to it;
+otherwise falls back to the global config.
+
+### Configuration File
+
+**Merge order:** `DEFAULT` → `~/.fuckucoderc.json` (global) → `.fuckucoderc.json` (project).
+Local fields override global, missing fields inherit from global.
 
 Supported formats: `.fuckucoderc.json` / `.yaml` / `.js` / `fuckucode.config.js` / `"fuckucode"` field in `package.json`.
 
@@ -175,6 +187,8 @@ fuck-u-code config set ai.provider openai
 fuck-u-code config set ai.model gpt-4o
 fuck-u-code config set ai.apiKey sk-your-key
 fuck-u-code config set ai.baseUrl https://api.openai.com/v1
+fuck-u-code config set ai.timeout 300           # Optional: increase for thinking models
+fuck-u-code config set -g ai.apiKey sk-xxx      # Global config (shared across projects)
 ```
 
 ## MCP Server

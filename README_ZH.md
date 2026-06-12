@@ -101,17 +101,29 @@ fuck-u-code ai-review . -b https://api.deepseek.com/v1 -k sk-xxx -m deepseek-cha
 ### 配置管理
 
 ```bash
-fuck-u-code config init                    # 生成 .fuckucoderc.json
-fuck-u-code config show                    # 查看当前配置
-fuck-u-code config set i18n.locale zh      # 设置默认语言
-fuck-u-code config set ai.provider openai  # 设置 AI 提供商
-fuck-u-code config set ai.model gpt-4o     # 设置 AI 模型
-fuck-u-code config set ai.apiKey sk-xxx    # 设置 API 密钥
+fuck-u-code config init                         # 生成 .fuckucoderc.json
+fuck-u-code config show                         # 查看当前配置
+fuck-u-code config set i18n.locale zh           # 设置默认语言
+fuck-u-code config set ai.provider openai       # 设置 AI 提供商
+fuck-u-code config set ai.model gpt-4o          # 设置 AI 模型
+fuck-u-code config set ai.apiKey sk-xxx         # 设置 API 密钥
+fuck-u-code config set ai.timeout 300           # 设置请求超时（秒）
+fuck-u-code config set ai.maxRetries 2          # 设置最大重试次数
+fuck-u-code config set -g ai.apiKey sk-xxx      # 强制写入全局配置
 ```
 
-## 配置文件
+| 选项               | 简写 | 说明                                      |
+| ------------------ | ---- | ----------------------------------------- |
+| `-g, --global`     |      | 强制写入全局配置（`~/.fuckucoderc.json`） |
 
-通过配置文件自动搜索，优先级：项目目录向上查找 > 全局配置 `~/.fuckucoderc.json`。
+**行为说明：** 不带 `-g` 时，`config set` 会先查找当前目录下是否存在配置文件
+（`.fuckucoderc.json` / `.yaml` / `.js` / `fuckucode.config.js`）。存在则写入本地文件，
+否则 fallback 到全局配置。
+
+### 配置文件
+
+**合并顺序：** `DEFAULT` → `~/.fuckucoderc.json`（全局）→ `.fuckucoderc.json`（项目）。
+本地有的字段覆盖全局，本地没有的从全局继承。
 
 支持格式：`.fuckucoderc.json` / `.yaml` / `.js` / `fuckucode.config.js` / `package.json` 中的 `"fuckucode"` 字段。
 
@@ -174,6 +186,8 @@ fuck-u-code config set ai.provider openai
 fuck-u-code config set ai.model gpt-4o
 fuck-u-code config set ai.apiKey sk-your-key
 fuck-u-code config set ai.baseUrl https://api.openai.com/v1
+fuck-u-code config set ai.timeout 300           # 可选：思考模型建议调大超时
+fuck-u-code config set -g ai.apiKey sk-xxx      # 全局配置（多项目共享）
 ```
 
 ## MCP Server
