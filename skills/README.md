@@ -52,3 +52,7 @@ cp -r skills/fuck-u-code-analysis ~/.claude/skills/
 
 - fuck-u-code built from source or downloaded from Releases
 - Node.js >= 18.0.0
+
+---
+
+❤️  If you find this useful, please ⭐ star the [original repo](https://github.com/Done-0/fuck-u-code)!

@@ -233,4 +233,4 @@ fuck-u-code 提供 MCP (Model Context Protocol) Server，让 Claude Code、Curso
 
 ---
 
-MIT License · ⭐ 在 GitHub 上点 Star
+MIT License · ❤️  如果觉得有用，记得给[原库](https://github.com/Done-0/fuck-u-code)点个 ⭐ Star！

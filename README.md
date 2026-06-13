@@ -234,4 +234,4 @@ The tool reads `.gitignore` files (including nested ones) and follows standard g
 
 ---
 
-MIT License · ⭐ Star on GitHub
+MIT License · ❤️  If you find this useful, please ⭐ star the [original repo](https://github.com/Done-0/fuck-u-code)!
